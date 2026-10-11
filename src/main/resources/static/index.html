@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="PuntoÚtil: avance académico del sistema de ventas e inventario de útiles escolares.">
+  <title>PuntoÚtil | Gestión comercial</title>
+  <link rel="stylesheet" href="/css/styles.css">
+  <script src="/js/app.js" defer></script>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <a class="brand" href="#inicio" aria-label="PuntoÚtil, inicio">
+        <span class="brand-symbol" aria-hidden="true">✦</span>
+        <span><strong>Punto<span class="brand-accent">Útil</span></strong><small>GESTIÓN COMERCIAL</small></span>
+      </a>
+      <p class="side-label">MENÚ PRINCIPAL</p>
+      <nav class="side-nav" aria-label="Navegación principal">
+        <a class="nav-link selected" data-view="inicio" href="#inicio"><span aria-hidden="true">▦</span> Panel principal</a>
+        <a class="nav-link" data-view="productos" href="#productos"><span aria-hidden="true">▤</span> Productos</a>
+        <a class="nav-link" data-view="categorias" href="#categorias"><span aria-hidden="true">◫</span> Categorías</a>
+        <a class="nav-link" data-view="clientes" href="#clientes"><span aria-hidden="true">♙</span> Clientes</a>
+        <a class="nav-link" data-view="ventas" href="#ventas"><span aria-hidden="true">◷</span> Ventas</a>
+        <a class="nav-link" data-view="inventario" href="#inventario"><span aria-hidden="true">▧</span> Inventario</a>
+        <a class="nav-link" data-view="usuarios" href="#usuarios"><span aria-hidden="true">♧</span> Usuarios</a>
+      </nav>
+      <div class="side-bottom"><span class="demo-pill"><span class="tiny-dot"></span> VERSIÓN DEMO</span><p>Grupo N.º 5 · Cibertec</p></div>
+    </aside>
+    <main class="main-content">
+      <header class="topbar">
+        <div><p class="eyebrow" id="encabezadoSeccion">PANEL DE CONTROL</p><h1 id="tituloSeccion">Bienvenido a PuntoÚtil 👋</h1></div>
+        <div class="account-chip"><span class="avatar">G5</span><span>Grupo 5<small>Proyecto académico</small></span></div>
+      </header>
+
+      <section class="view" id="view-inicio">
+        <section class="hero" aria-labelledby="hero-title">
+          <div class="hero-copy"><span class="hero-tag">● PRIMER AVANCE FUNCIONAL</span>
+            <h2 id="hero-title">Tu librería, más organizada.</h2>
+            <p>Explora el catálogo de productos y las pantallas iniciales para la futura gestión de ventas e inventario.</p>
+            <a class="hero-action" href="#productos">Explorar catálogo <span aria-hidden="true">↗</span></a></div>
+          <div class="hero-art" aria-hidden="true"><div class="art-circle"></div><div class="art-card"><span>✏️</span><span>📒</span><span>📏</span><small>PUNTOÚTIL</small></div></div>
+        </section>
+        <section class="metrics" aria-label="Resumen del sistema">
+          <article class="metric-card"><div class="metric-icon blue" aria-hidden="true">▤</div><p>Productos disponibles</p><strong id="totalProductos">—</strong><small>Consultados desde la API REST</small></article>
+          <article class="metric-card"><div class="metric-icon green" aria-hidden="true">✓</div><p>Estado del backend</p><strong class="metric-state" id="estadoApi">Verificando...</strong><small>GET /api/estado</small></article>
+          <article class="metric-card"><div class="metric-icon amber" aria-hidden="true">◷</div><p>Etapa del proyecto</p><strong class="metric-state">Demo inicial</strong><small>Sin operaciones persistidas</small></article>
+        </section>
+        <section class="catalog-card pad-section"><span class="overline">HOJA DE RUTA</span><h2>Avance de módulos</h2>
+          <p class="muted">En esta versión, el catálogo se obtiene del backend. Las pantallas de categorías, clientes y ventas son prototipos interactivos sin persistencia.</p>
+          <div class="feature-grid">
+            <a class="feature-tile" href="#productos"><span>📦</span><strong>Productos</strong><small>API REST conectada</small></a>
+            <a class="feature-tile" href="#categorias"><span>🏷️</span><strong>Categorías</strong><small>Ejercicio local</small></a>
+            <a class="feature-tile" href="#clientes"><span>👥</span><strong>Clientes</strong><small>Ejercicio local</small></a>
+            <a class="feature-tile" href="#ventas"><span>🧾</span><strong>Ventas</strong><small>Cotizador, sin guardar</small></a>
+            <a class="feature-tile" href="#inventario"><span>📋</span><strong>Inventario</strong><small>Próxima integración</small></a>
+            <a class="feature-tile" href="#usuarios"><span>🔐</span><strong>Usuarios</strong><small>Seguridad pendiente</small></a>
+          </div>
+        </section>
+      </section>
+
+      <section class="view" id="view-productos" hidden>
+        <section class="catalog-card" aria-labelledby="catalog-title">
+          <div class="section-heading"><div><span class="overline">CATÁLOGO INICIAL</span><h2 id="catalog-title">Nuestros productos</h2><p>Datos obtenidos de Spring Boot mediante GET /api/productos.</p></div><button type="button" class="refresh-button" id="actualizar">↻ Actualizar</button></div>
+          <div class="toolbar"><label class="searchbox" for="buscar"><span aria-hidden="true">⌕</span><input id="buscar" type="search" placeholder="Buscar por código o nombre..." autocomplete="off"></label><span id="contador" class="count">Cargando...</span></div>
+          <div class="table-scroll"><table><thead><tr><th scope="col">Código</th><th scope="col">Producto</th><th scope="col">Precio referencial</th><th scope="col">Estado</th></tr></thead><tbody id="listaProductos"><tr><td colspan="4" class="message">Cargando productos...</td></tr></tbody></table></div>
+          <div class="catalog-footer"><span id="ultimaCarga">Esperando al servidor</span><span>Precios referenciales en soles</span></div>
+        </section>
+      </section>
+
+      <section class="view" id="view-categorias" hidden>
+        <div class="notice"><strong>Prototipo de categorías</strong><span>Crear y eliminar aquí solo modifica la memoria del navegador. Los cambios se pierden al actualizar y todavía no llegan a MySQL.</span></div>
+        <section class="catalog-card pad-section"><span class="overline">CLASIFICACIÓN</span><h2>Gestionar categorías</h2><p class="muted">Categorías de ejemplo relacionadas con los productos del catálogo.</p>
+          <form id="formCategoria" class="inline-form"><label for="nombreCategoria">Nombre de la categoría</label><input id="nombreCategoria" maxlength="50" required placeholder="Ej. Cuadernos"><button type="submit" class="primary-button">+ Agregar (demo)</button></form>
+          <div class="table-scroll"><table><thead><tr><th>Categoría</th><th>Tipo</th><th>Acción</th></tr></thead><tbody id="listaCategorias"></tbody></table></div>
+        </section>
+      </section>
+
+      <section class="view" id="view-clientes" hidden>
+        <div class="notice"><strong>Clientes de prueba</strong><span>Utiliza datos ficticios. Los registros solo viven mientras mantienes abierta esta página; no se guardan en el servidor.</span></div>
+        <section class="catalog-card pad-section"><span class="overline">ATENCIÓN COMERCIAL</span><h2>Registro de clientes</h2>
+          <form id="formCliente" class="inline-form"><label for="nombreCliente">Nombre ficticio</label><input id="nombreCliente" maxlength="70" required placeholder="Ej. Cliente de prueba"><button class="primary-button" type="submit">+ Agregar (demo)</button></form>
+          <div class="table-scroll"><table><thead><tr><th>Cliente de demostración</th><th>Estado</th><th>Acción</th></tr></thead><tbody id="listaClientes"></tbody></table></div>
+        </section>
+      </section>
+
+      <section class="view" id="view-ventas" hidden>
+        <div class="notice"><strong>Cotizador de demostración — no registra ventas</strong><span>Selecciona productos y cantidades para calcular un total estimado. No modifica stock ni almacena operaciones.</span></div>
+        <section class="catalog-card pad-section"><span class="overline">SIMULACIÓN</span><h2>Calcular una venta</h2>
+          <form id="formVenta" class="inline-form"><label for="productoVenta">Producto</label><select id="productoVenta" required><option value="">Cargando productos...</option></select><label for="cantidadVenta">Cantidad</label><input id="cantidadVenta" type="number" min="1" max="999" step="1" value="1" required><button class="primary-button" type="submit">+ Añadir al cálculo</button></form>
+          <div class="table-scroll"><table><thead><tr><th>Producto</th><th>Cantidad</th><th>Subtotal</th><th>Acción</th></tr></thead><tbody id="detalleVenta"><tr><td colspan="4" class="message">Agrega un producto para comenzar.</td></tr></tbody></table></div>
+          <div class="total-bar"><span>Total estimado</span><strong id="totalVenta">S/ 0.00</strong></div>
+          <p class="muted small-text">La confirmación de ventas se habilitará cuando implementemos MySQL, transacciones y validación de stock.</p>
+        </section>
+      </section>
+
+      <section class="view" id="view-inventario" hidden>
+        <div class="notice"><strong>Inventario pendiente de implementación</strong><span>El backend todavía no devuelve cantidades disponibles. No mostraremos stock inventado como si fueran existencias reales.</span></div>
+        <section class="catalog-card pad-section"><span class="overline">CONTROL DE EXISTENCIAS</span><h2>Listado para integrar con MySQL</h2>
+          <div class="table-scroll"><table><thead><tr><th>Código</th><th>Producto</th><th>Stock</th><th>Integración</th></tr></thead><tbody id="listaInventario"></tbody></table></div>
+        </section>
+      </section>
+
+      <section class="view" id="view-usuarios" hidden>
+        <div class="notice"><strong>Administración de usuarios pendiente</strong><span>El inicio de sesión visible actualmente es el predeterminado de Spring Security, con credenciales temporales de desarrollo.</span></div>
+        <section class="catalog-card pad-section"><span class="overline">SEGURIDAD</span><h2>Roles planificados</h2><div class="feature-grid">
+          <div class="feature-tile"><span>🛡️</span><strong>Administrador</strong><small>Gestionará usuarios, productos, inventario y anulaciones.</small></div>
+          <div class="feature-tile"><span>🛒</span><strong>Vendedor</strong><small>Consultará productos y registrará ventas.</small></div>
+        </div><p class="muted">Los roles ADMIN y VENDEDOR aún no están configurados ni se aplican en estos módulos.</p></section>
+      </section>
+      <p class="footer-note">PuntoÚtil · Desarrollo de Aplicaciones Web II · Cibertec · Grupo N.º 5</p>
+    </main>
+  </div>
+</body>
+</html>

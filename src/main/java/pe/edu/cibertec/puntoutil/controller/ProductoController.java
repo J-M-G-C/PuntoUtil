@@ -5,7 +5,6 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import pe.edu.cibertec.puntoutil.dto.ProductoRequest;
 import pe.edu.cibertec.puntoutil.dto.ProductoResponse;
 import pe.edu.cibertec.puntoutil.service.ProductoService;
@@ -55,5 +54,14 @@ public class ProductoController {
                 productoService.actualizarProducto(id, request);
 
         return ResponseEntity.ok(producto);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> desactivarProducto(
+            @PathVariable Long id) {
+
+        productoService.desactivarProducto(id);
+
+        return ResponseEntity.noContent().build();
     }
 }

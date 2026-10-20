@@ -131,6 +131,22 @@ public class ProductoService {
         return convertirAResponse(actualizado);
     }
 
+    // Desactivar un producto sin eliminarlo de la base de datos
+    @Transactional
+    public void desactivarProducto(Long id) {
+
+        Producto producto = productoRepository.findById(id)
+                .filter(Producto::isActivo)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Producto no encontrado o ya desactivado"
+                ));
+
+        producto.setActivo(false);
+
+        productoRepository.save(producto);
+    }
+
     private ProductoResponse convertirAResponse(Producto producto) {
         return new ProductoResponse(
                 producto.getCodigo(),

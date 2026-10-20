@@ -31,6 +31,7 @@ public class ProductoService {
     public List<ProductoResponse> listarProductos() {
         return productoRepository.findAll()
                 .stream()
+                .filter(Producto::isActivo)
                 .map(this::convertirAResponse)
                 .toList();
     }
@@ -55,6 +56,7 @@ public class ProductoService {
         producto.setActivo(true);
 
         if (request.categoriaId() != null) {
+
             Categoria categoria = categoriaRepository
                     .findById(request.categoriaId())
                     .orElseThrow(() -> new ResponseStatusException(
@@ -68,6 +70,65 @@ public class ProductoService {
         Producto guardado = productoRepository.save(producto);
 
         return convertirAResponse(guardado);
+    }
+
+    @Transactional(readOnly = true)
+    public ProductoResponse obtenerProductoPorId(Long id) {
+
+        Producto producto = productoRepository.findById(id)
+                .filter(Producto::isActivo)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Producto no encontrado"
+                ));
+
+        return convertirAResponse(producto);
+    }
+
+    @Transactional
+    public ProductoResponse actualizarProducto(
+            Long id, ProductoRequest request) {
+
+        Producto producto = productoRepository.findById(id)
+                .filter(Producto::isActivo)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Producto no encontrado"
+                ));
+
+        productoRepository.findByCodigo(request.codigo())
+                .filter(otro -> !otro.getId().equals(id))
+                .ifPresent(otro -> {
+                    throw new ResponseStatusException(
+                            HttpStatus.CONFLICT,
+                            "Ya existe otro producto con ese codigo"
+                    );
+                });
+
+        producto.setCodigo(request.codigo());
+        producto.setNombre(request.nombre());
+        producto.setPrecio(request.precio());
+        producto.setStock(request.stock());
+        producto.setStockMinimo(request.stockMinimo());
+
+        if (request.categoriaId() != null) {
+
+            Categoria categoria = categoriaRepository
+                    .findById(request.categoriaId())
+                    .orElseThrow(() -> new ResponseStatusException(
+                            HttpStatus.BAD_REQUEST,
+                            "La categoria indicada no existe"
+                    ));
+
+            producto.setCategoria(categoria);
+
+        } else {
+            producto.setCategoria(null);
+        }
+
+        Producto actualizado = productoRepository.save(producto);
+
+        return convertirAResponse(actualizado);
     }
 
     private ProductoResponse convertirAResponse(Producto producto) {

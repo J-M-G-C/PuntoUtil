@@ -1,4 +1,6 @@
+
 package pe.edu.cibertec.puntoutil.controller;
+
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,6 +27,13 @@ public class ProductoController {
         return productoService.listarProductos();
     }
 
+    @GetMapping("/{id}")
+    public ProductoResponse obtenerProductoPorId(
+            @PathVariable Long id) {
+
+        return productoService.obtenerProductoPorId(id);
+    }
+
     @PostMapping
     public ResponseEntity<ProductoResponse> registrarProducto(
             @Valid @RequestBody ProductoRequest request) {
@@ -35,5 +44,16 @@ public class ProductoController {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(producto);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<ProductoResponse> actualizarProducto(
+            @PathVariable Long id,
+            @Valid @RequestBody ProductoRequest request) {
+
+        ProductoResponse producto =
+                productoService.actualizarProducto(id, request);
+
+        return ResponseEntity.ok(producto);
     }
 }

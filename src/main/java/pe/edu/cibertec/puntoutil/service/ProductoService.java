@@ -1,24 +1,73 @@
 package pe.edu.cibertec.puntoutil.service;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
+
+import pe.edu.cibertec.puntoutil.dto.ProductoRequest;
 import pe.edu.cibertec.puntoutil.dto.ProductoResponse;
+import pe.edu.cibertec.puntoutil.entity.Categoria;
 import pe.edu.cibertec.puntoutil.entity.Producto;
+import pe.edu.cibertec.puntoutil.repository.CategoriaRepository;
 import pe.edu.cibertec.puntoutil.repository.ProductoRepository;
+
 import java.util.List;
 
 @Service
 public class ProductoService {
 
     private final ProductoRepository productoRepository;
+    private final CategoriaRepository categoriaRepository;
 
-    public ProductoService(ProductoRepository productoRepository) {
+    public ProductoService(
+            ProductoRepository productoRepository,
+            CategoriaRepository categoriaRepository) {
+
         this.productoRepository = productoRepository;
+        this.categoriaRepository = categoriaRepository;
     }
 
+    @Transactional(readOnly = true)
     public List<ProductoResponse> listarProductos() {
         return productoRepository.findAll()
                 .stream()
                 .map(this::convertirAResponse)
                 .toList();
+    }
+
+    @Transactional
+    public ProductoResponse registrarProducto(ProductoRequest request) {
+
+        if (productoRepository.findByCodigo(request.codigo()).isPresent()) {
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "Ya existe un producto con ese codigo"
+            );
+        }
+
+        Producto producto = new Producto();
+
+        producto.setCodigo(request.codigo());
+        producto.setNombre(request.nombre());
+        producto.setPrecio(request.precio());
+        producto.setStock(request.stock());
+        producto.setStockMinimo(request.stockMinimo());
+        producto.setActivo(true);
+
+        if (request.categoriaId() != null) {
+            Categoria categoria = categoriaRepository
+                    .findById(request.categoriaId())
+                    .orElseThrow(() -> new ResponseStatusException(
+                            HttpStatus.BAD_REQUEST,
+                            "La categoria indicada no existe"
+                    ));
+
+            producto.setCategoria(categoria);
+        }
+
+        Producto guardado = productoRepository.save(producto);
+
+        return convertirAResponse(guardado);
     }
 
     private ProductoResponse convertirAResponse(Producto producto) {

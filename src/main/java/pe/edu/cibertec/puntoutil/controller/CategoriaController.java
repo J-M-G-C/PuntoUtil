@@ -22,13 +22,11 @@ public class CategoriaController {
         this.categoriaService = categoriaService;
     }
 
-    // Listar categorias
     @GetMapping
     public List<CategoriaResponse> listarCategorias() {
         return categoriaService.listarCategorias();
     }
 
-    // Registrar categoria
     @PostMapping
     public ResponseEntity<CategoriaResponse> registrarCategoria(
             @Valid @RequestBody CategoriaRequest request) {
@@ -41,7 +39,6 @@ public class CategoriaController {
                 .body(categoria);
     }
 
-    // Actualizar categoria
     @PutMapping("/{id}")
     public ResponseEntity<CategoriaResponse> actualizarCategoria(
             @PathVariable Long id,
@@ -53,7 +50,6 @@ public class CategoriaController {
         return ResponseEntity.ok(categoria);
     }
 
-    // Desactivar categoria
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> desactivarCategoria(
             @PathVariable Long id) {

@@ -1,6 +1,5 @@
 
 package pe.edu.cibertec.puntoutil.security;
-
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -17,23 +16,27 @@ public class SecurityConfig {
             HttpSecurity http) throws Exception {
 
         http
-                // Excepcion temporal de CSRF para pruebas de la API
+                // Excepcion temporal de CSRF para la API de desarrollo
                 .csrf(csrf -> csrf
                         .ignoringRequestMatchers(
                                 "/api/productos",
-                                "/api/productos/**"
+                                "/api/productos/**",
+                                "/api/categorias",
+                                "/api/categorias/**"
                         )
                 )
 
-                // No guardar sesiones para las solicitudes de la API
+                // No almacenar sesiones de autenticacion
                 .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                        .sessionCreationPolicy(
+                                SessionCreationPolicy.STATELESS
+                        )
                 )
 
-                // Configuracion de acceso
+                // Configuracion de permisos
                 .authorizeHttpRequests(auth -> auth
 
-                        // Recursos publicos
+                        // Recursos publicos de la aplicacion
                         .requestMatchers(
                                 "/",
                                 "/index.html",
@@ -42,32 +45,61 @@ public class SecurityConfig {
                                 "/api/estado"
                         ).permitAll()
 
-                        // Consultar productos sin autenticacion
+                        // PRODUCTOS
+
+                        // Listar y consultar productos
                         .requestMatchers(
                                 HttpMethod.GET,
                                 "/api/productos",
                                 "/api/productos/**"
                         ).permitAll()
 
-                        // Registrar productos con autenticacion
+                        // Registrar productos
                         .requestMatchers(
                                 HttpMethod.POST,
                                 "/api/productos"
                         ).authenticated()
 
-                        // Actualizar productos con autenticacion
+                        // Actualizar productos
                         .requestMatchers(
                                 HttpMethod.PUT,
                                 "/api/productos/**"
                         ).authenticated()
 
-                        // Desactivar productos con autenticacion
+                        // Desactivar productos
                         .requestMatchers(
                                 HttpMethod.DELETE,
                                 "/api/productos/**"
                         ).authenticated()
 
-                        // Proteger los demas endpoints
+                        // CATEGORIAS
+
+                        // Listar categorias
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/categorias",
+                                "/api/categorias/**"
+                        ).permitAll()
+
+                        // Registrar categorias
+                        .requestMatchers(
+                                HttpMethod.POST,
+                                "/api/categorias"
+                        ).authenticated()
+
+                        // Actualizar categorias
+                        .requestMatchers(
+                                HttpMethod.PUT,
+                                "/api/categorias/**"
+                        ).authenticated()
+
+                        // Desactivar categorias
+                        .requestMatchers(
+                                HttpMethod.DELETE,
+                                "/api/categorias/**"
+                        ).authenticated()
+
+                        // Proteger todas las demas rutas
                         .anyRequest().authenticated()
                 )
 

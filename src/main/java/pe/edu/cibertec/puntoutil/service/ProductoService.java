@@ -108,7 +108,14 @@ public class ProductoService {
         producto.setCodigo(request.codigo());
         producto.setNombre(request.nombre());
         producto.setPrecio(request.precio());
-        producto.setStock(request.stock());
+        if (!java.util.Objects.equals(
+                producto.getStock(), request.stock())) {
+
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "El stock debe modificarse desde inventario"
+            );
+        }
         producto.setStockMinimo(request.stockMinimo());
 
         if (request.categoriaId() != null) {
@@ -135,8 +142,7 @@ public class ProductoService {
     @Transactional
     public void desactivarProducto(Long id) {
 
-        Producto producto = productoRepository.findById(id)
-                .filter(Producto::isActivo)
+        Producto producto = productoRepository.findByIdParaMovimiento(id)                .filter(Producto::isActivo)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
                         "Producto no encontrado o ya desactivado"

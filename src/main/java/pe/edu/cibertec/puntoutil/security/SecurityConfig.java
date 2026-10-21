@@ -1,4 +1,3 @@
-
 package pe.edu.cibertec.puntoutil.security;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,27 +15,28 @@ public class SecurityConfig {
             HttpSecurity http) throws Exception {
 
         http
-                // Excepcion temporal de CSRF para la API de desarrollo
+                // Excepciones temporales de CSRF para pruebas locales
                 .csrf(csrf -> csrf
                         .ignoringRequestMatchers(
                                 "/api/productos",
                                 "/api/productos/**",
                                 "/api/categorias",
-                                "/api/categorias/**"
+                                "/api/categorias/**",
+                                "/api/inventario/**"
                         )
                 )
 
-                // No almacenar sesiones de autenticacion
+                // Autenticacion sin sesiones HTTP
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(
                                 SessionCreationPolicy.STATELESS
                         )
                 )
 
-                // Configuracion de permisos
+                // Permisos de acceso
                 .authorizeHttpRequests(auth -> auth
 
-                        // Recursos publicos de la aplicacion
+                        // RECURSOS PUBLICOS
                         .requestMatchers(
                                 "/",
                                 "/index.html",
@@ -45,65 +45,73 @@ public class SecurityConfig {
                                 "/api/estado"
                         ).permitAll()
 
-                        // PRODUCTOS
-
-                        // Listar y consultar productos
+                        // PRODUCTOS: CONSULTAR
                         .requestMatchers(
                                 HttpMethod.GET,
                                 "/api/productos",
                                 "/api/productos/**"
                         ).permitAll()
 
-                        // Registrar productos
+                        // PRODUCTOS: REGISTRAR
                         .requestMatchers(
                                 HttpMethod.POST,
                                 "/api/productos"
                         ).authenticated()
 
-                        // Actualizar productos
+                        // PRODUCTOS: ACTUALIZAR
                         .requestMatchers(
                                 HttpMethod.PUT,
                                 "/api/productos/**"
                         ).authenticated()
 
-                        // Desactivar productos
+                        // PRODUCTOS: DESACTIVAR
                         .requestMatchers(
                                 HttpMethod.DELETE,
                                 "/api/productos/**"
                         ).authenticated()
 
-                        // CATEGORIAS
-
-                        // Listar categorias
+                        // CATEGORIAS: CONSULTAR
                         .requestMatchers(
                                 HttpMethod.GET,
                                 "/api/categorias",
                                 "/api/categorias/**"
                         ).permitAll()
 
-                        // Registrar categorias
+                        // CATEGORIAS: REGISTRAR
                         .requestMatchers(
                                 HttpMethod.POST,
                                 "/api/categorias"
                         ).authenticated()
 
-                        // Actualizar categorias
+                        // CATEGORIAS: ACTUALIZAR
                         .requestMatchers(
                                 HttpMethod.PUT,
                                 "/api/categorias/**"
                         ).authenticated()
 
-                        // Desactivar categorias
+                        // CATEGORIAS: DESACTIVAR
                         .requestMatchers(
                                 HttpMethod.DELETE,
                                 "/api/categorias/**"
                         ).authenticated()
 
-                        // Proteger todas las demas rutas
+                        // INVENTARIO: REGISTRAR MOVIMIENTOS
+                        .requestMatchers(
+                                HttpMethod.POST,
+                                "/api/inventario/movimientos"
+                        ).authenticated()
+
+                        // INVENTARIO: CONSULTAR HISTORIAL
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/inventario/movimientos/producto/**"
+                        ).authenticated()
+
+                        // PROTEGER TODAS LAS DEMAS RUTAS
                         .anyRequest().authenticated()
                 )
 
-                // Autenticacion HTTP Basic para desarrollo
+                // HTTP Basic temporal para desarrollo
                 .httpBasic(Customizer.withDefaults());
 
         return http.build();

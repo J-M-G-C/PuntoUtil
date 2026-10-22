@@ -1,0 +1,179 @@
+<main class="principal">
+
+  <section class="bienvenida">
+    <div>
+      <p class="etiqueta">CONTROL DE EXISTENCIAS</p>
+      <h2>Gestión de inventario</h2>
+      <p>
+        Supervisa las existencias de los productos
+        y detecta niveles bajos de stock.
+      </p>
+    </div>
+
+    <div class="bienvenida-icono">🏬</div>
+  </section>
+
+  <section class="estadisticas">
+
+    <div class="tarjeta">
+      <span class="tarjeta-icono">📦</span>
+      <p>Unidades disponibles</p>
+      <h3>{{ totalUnidades() }}</h3>
+      <small>Existencias registradas</small>
+    </div>
+
+    <div class="tarjeta">
+      <span class="tarjeta-icono">⚠️</span>
+      <p>Productos con stock bajo</p>
+      <h3>{{ productosBajoMinimo() }}</h3>
+      <small>En su mínimo o por debajo</small>
+    </div>
+
+    <div class="tarjeta">
+      <span class="tarjeta-icono">🚫</span>
+      <p>Productos agotados</p>
+      <h3>{{ productosAgotados() }}</h3>
+      <small>Sin unidades disponibles</small>
+    </div>
+
+  </section>
+
+  <section class="panel">
+
+    <div class="panel-superior">
+      <div>
+        <h2>Control de stock</h2>
+        <p>Información de inventario desde MySQL</p>
+      </div>
+
+      <button
+        type="button"
+        class="boton-actualizar"
+        (click)="cargarInventario()">
+        ↻ Actualizar
+      </button>
+    </div>
+
+    <div class="herramientas">
+      <div class="filtros">
+
+        <input
+          type="search"
+          placeholder="Buscar producto o código..."
+          (input)="buscar($event)"
+        />
+
+        <label class="filtro-checkbox">
+          <input
+            type="checkbox"
+            (change)="filtrarStockBajo($event)"
+          />
+          Mostrar solo stock bajo
+        </label>
+
+      </div>
+    </div>
+
+    @if (cargando()) {
+
+    <div class="mensaje">
+      Cargando inventario...
+    </div>
+
+    } @else if (error()) {
+
+    <div class="mensaje error">
+      {{ error() }}
+    </div>
+
+    } @else if (productosFiltrados().length === 0) {
+
+    <div class="mensaje">
+      No se encontraron productos.
+    </div>
+
+    } @else {
+
+    <div class="tabla-contenedor">
+      <table>
+        <thead>
+        <tr>
+          <th>Código</th>
+          <th>Producto</th>
+          <th>Categoría</th>
+          <th>Stock actual</th>
+          <th>Stock mínimo</th>
+          <th>Estado</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        @for (
+        producto of productosFiltrados();
+        track producto.id
+        ) {
+
+        <tr>
+          <td class="codigo">
+            {{ producto.codigo }}
+          </td>
+
+          <td>
+            <strong>{{ producto.nombre }}</strong>
+          </td>
+
+          <td>
+            {{ producto.categoriaNombre || 'Sin categoría' }}
+          </td>
+
+          <td>
+            <strong>{{ producto.stock }}</strong>
+          </td>
+
+          <td>
+            {{ producto.stockMinimo }}
+          </td>
+
+          <td>
+                  <span
+                    class="estado"
+                    [class.stock-bajo]="
+                      producto.stock <= producto.stockMinimo
+                      && producto.stock > 0
+                    "
+                    [class.agotado]="producto.stock === 0">
+
+                    @if (producto.stock === 0) {
+                      Agotado
+                    } @else if (
+                      producto.stock <= producto.stockMinimo
+                    ) {
+                      Stock bajo
+                    } @else {
+                      Disponible
+                    }
+
+                  </span>
+          </td>
+        </tr>
+
+        }
+        </tbody>
+      </table>
+    </div>
+
+    }
+
+    <div class="panel-pie">
+      Mostrando {{ productosFiltrados().length }}
+      productos
+    </div>
+
+  </section>
+
+  <p class="nota-inventario">
+    Las entradas, salidas y el historial de movimientos
+    se conectarán después de integrar el inicio de sesión.
+  </p>
+
+</main>

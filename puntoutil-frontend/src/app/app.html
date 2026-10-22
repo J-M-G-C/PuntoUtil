@@ -13,15 +13,22 @@
     <div class="seccion-menu">MENÚ PRINCIPAL</div>
 
     <nav class="navegacion">
-      <div class="opcion activa">
+
+      <a
+        class="opcion"
+        routerLink="/productos"
+        routerLinkActive="activa">
         <span>📦</span>
         Productos
-      </div>
+      </a>
 
-      <div class="opcion pendiente">
-        <span>🗂️</span>
+      <a
+        class="opcion"
+        routerLink="/categorias"
+        routerLinkActive="activa">
+        <span>📁</span>
         Categorías
-      </div>
+      </a>
 
       <div class="opcion pendiente">
         <span>🏬</span>
@@ -38,10 +45,14 @@
         Pedidos
       </div>
 
-      <div class="opcion pendiente">
-        <span>👥</span>
-        Usuarios
-      </div>
+      <a
+        class="opcion"
+        routerLink="/inventario"
+        routerLinkActive="activa">
+        <span>🏬</span>
+        Inventario
+      </a>
+
     </nav>
 
     <div class="nota-lateral">
@@ -56,169 +67,19 @@
 
     <header class="cabecera">
       <div>
-        <span class="subtitulo">Sistema de administración</span>
-        <h1>Panel de productos</h1>
+        <span class="subtitulo">
+          Sistema de administración
+        </span>
+        <h1>PuntoÚtil</h1>
       </div>
 
       <div class="indicador">
-        <span class="punto-verde"></span>
-        Spring Boot conectado
+        Panel administrativo
       </div>
     </header>
 
-    <main class="principal">
+    <router-outlet></router-outlet>
 
-      <section class="bienvenida">
-        <div>
-          <p class="etiqueta">PANEL DE GESTIÓN</p>
-          <h2>Controla tus productos de manera sencilla</h2>
-          <p>
-            Consulta precios, categorías y existencias
-            desde un solo lugar.
-          </p>
-        </div>
-
-        <div class="bienvenida-icono">📚</div>
-      </section>
-
-      <section class="estadisticas">
-
-        <div class="tarjeta">
-          <span class="tarjeta-icono">📦</span>
-          <p>Productos activos</p>
-          <h3>{{ totalProductos() }}</h3>
-          <small>Registrados en el sistema</small>
-        </div>
-
-        <div class="tarjeta">
-          <span class="tarjeta-icono">🏬</span>
-          <p>Unidades disponibles</p>
-          <h3>{{ totalUnidades() }}</h3>
-          <small>Existencias registradas</small>
-        </div>
-
-        <div class="tarjeta">
-          <span class="tarjeta-icono">⚠️</span>
-          <p>Productos con stock bajo</p>
-          <h3>{{ productosStockBajo() }}</h3>
-          <small>Requieren revisión</small>
-        </div>
-
-      </section>
-
-      <section class="panel">
-
-        <div class="panel-superior">
-          <div>
-            <h2>Catálogo de productos</h2>
-            <p>
-              Información actualizada desde MySQL
-            </p>
-          </div>
-
-          <button
-            type="button"
-            class="boton-actualizar"
-            (click)="cargarProductos()">
-            ↻ Actualizar
-          </button>
-        </div>
-
-        <div class="herramientas">
-          <input
-            type="search"
-            placeholder="Buscar por código, nombre o categoría..."
-            (input)="buscar($event)"
-          />
-        </div>
-
-        @if (cargando()) {
-
-        <div class="mensaje">
-          Cargando productos...
-        </div>
-
-        } @else if (error()) {
-
-        <div class="mensaje error">
-          {{ error() }}
-        </div>
-
-        } @else if (productosFiltrados().length === 0) {
-
-        <div class="mensaje">
-          No se encontraron productos.
-        </div>
-
-        } @else {
-
-        <div class="tabla-contenedor">
-          <table>
-            <thead>
-            <tr>
-              <th>Código</th>
-              <th>Producto</th>
-              <th>Categoría</th>
-              <th>Precio</th>
-              <th>Stock</th>
-              <th>Estado</th>
-            </tr>
-            </thead>
-
-            <tbody>
-            @for (producto of productosFiltrados();
-            track producto.id) {
-
-            <tr>
-              <td class="codigo">
-                {{ producto.codigo }}
-              </td>
-
-              <td>
-                <strong>{{ producto.nombre }}</strong>
-              </td>
-
-              <td>
-                {{ producto.categoriaNombre || 'Sin categoría' }}
-              </td>
-
-              <td class="precio">
-                S/ {{ producto.precio | number:'1.2-2' }}
-              </td>
-
-              <td>
-                {{ producto.stock }} unidades
-              </td>
-
-              <td>
-                      <span
-                        class="estado"
-                        [class.stock-bajo]="
-                          producto.stock <= producto.stockMinimo
-                        ">
-                        {{
-                          producto.stock <= producto.stockMinimo
-                            ? 'Stock bajo'
-                            : 'Disponible'
-                        }}
-                      </span>
-              </td>
-            </tr>
-
-            }
-            </tbody>
-          </table>
-        </div>
-
-        }
-
-        <div class="panel-pie">
-          Mostrando {{ productosFiltrados().length }}
-          productos
-        </div>
-
-      </section>
-
-    </main>
   </div>
+
 </div>

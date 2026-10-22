@@ -1,0 +1,42 @@
+:host {
+  display: block;
+}
+
+.panel {
+  margin-top: 24px;
+}
+
+.filtros {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 18px;
+}
+
+.filtro-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #63738a;
+  cursor: pointer;
+}
+
+.filtro-checkbox input[type="checkbox"] {
+  width: auto;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  accent-color: #f18b2b;
+}
+
+.estado.agotado {
+  background: #fde9e9;
+  color: #c12d2d;
+}
+
+.nota-inventario {
+  margin-top: 18px;
+  font-size: 12px;
+  color: #8592a5;
+}

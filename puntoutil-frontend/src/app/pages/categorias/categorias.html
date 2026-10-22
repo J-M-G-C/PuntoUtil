@@ -1,0 +1,151 @@
+<main class="principal">
+
+  <section class="bienvenida">
+
+    <div>
+      <p class="etiqueta">ORGANIZACIÓN DEL CATÁLOGO</p>
+      <h2>Gestión de categorías</h2>
+      <p>
+        Organiza los productos de PuntoÚtil
+        por categorías.
+      </p>
+    </div>
+
+    <div class="bienvenida-icono">📁</div>
+
+  </section>
+
+  <section class="estadisticas">
+
+    <div class="tarjeta">
+      <span class="tarjeta-icono">📁</span>
+      <p>Categorías registradas</p>
+      <h3>{{ categorias().length }}</h3>
+      <small>En la base de datos</small>
+    </div>
+
+    <div class="tarjeta">
+      <span class="tarjeta-icono">✅</span>
+      <p>Categorías activas</p>
+      <h3>
+        {{ categoriasActivas() }}
+      </h3>
+      <small>Disponibles actualmente</small>
+    </div>
+
+    <div class="tarjeta">
+      <span class="tarjeta-icono">🔎</span>
+      <p>Resultados de búsqueda</p>
+      <h3>{{ categoriasFiltradas().length }}</h3>
+      <small>Categorías encontradas</small>
+    </div>
+
+  </section>
+
+  <section class="panel">
+
+    <div class="panel-superior">
+
+      <div>
+        <h2>Listado de categorías</h2>
+        <p>Datos obtenidos desde Spring Boot y MySQL</p>
+      </div>
+
+      <button
+        type="button"
+        class="boton-actualizar"
+        (click)="cargarCategorias()">
+        ↻ Actualizar
+      </button>
+
+    </div>
+
+    <div class="herramientas">
+      <input
+        type="search"
+        placeholder="Buscar categoría por nombre..."
+        (input)="buscar($event)"
+      />
+    </div>
+
+    @if (cargando()) {
+
+    <div class="mensaje">
+      Cargando categorías...
+    </div>
+
+    } @else if (error()) {
+
+    <div class="mensaje error">
+      {{ error() }}
+    </div>
+
+    } @else if (categoriasFiltradas().length === 0) {
+
+    <div class="mensaje">
+      No se encontraron categorías.
+    </div>
+
+    } @else {
+
+    <div class="tabla-contenedor">
+
+      <table>
+
+        <thead>
+        <tr>
+          <th>ID</th>
+          <th>Nombre de categoría</th>
+          <th>Estado</th>
+        </tr>
+        </thead>
+
+        <tbody>
+
+        @for (
+        categoria of categoriasFiltradas();
+        track categoria.id
+        ) {
+
+        <tr>
+          <td class="codigo">
+            {{ categoria.id }}
+          </td>
+
+          <td>
+            <strong>{{ categoria.nombre }}</strong>
+          </td>
+
+          <td>
+                  <span
+                    class="estado"
+                    [class.stock-bajo]="
+                      categoria.activo === false
+                    ">
+                    {{
+                      categoria.activo === false
+                        ? 'Inactiva'
+                        : 'Activa'
+                    }}
+                  </span>
+          </td>
+        </tr>
+
+        }
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+    }
+
+    <div class="panel-pie">
+      Mostrando {{ categoriasFiltradas().length }}
+      categorías
+    </div>
+
+  </section>
+
+</main>

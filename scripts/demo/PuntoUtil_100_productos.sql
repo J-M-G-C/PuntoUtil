@@ -1,22 +1,8 @@
--- PuntoUtil - catálogo de DEMOSTRACIÓN: 100 productos nuevos en 12 categorías
--- Ejecutar MANUALMENTE en MySQL Workbench, NO agregar a db/migration de Flyway.
--- Los productos PU de prueba ya se eliminaron previamente en MySQL; esta carga no elimina ni cambia productos existentes.
--- Idempotente para códigos LIB001 a LIB100; si ya existen, los omite.
--- Precios en S/ referenciales ficticios para pruebas; no representan cotizaciones actuales.
--- Stock inicial representa saldo de apertura para esta DEMO; no genera movimiento de inventario.
--- Compatible con tabla categorias(nombre, activa) y productos(codigo, nombre, precio, stock, stock_minimo, categoria_id, activo).
--- Ejecutar SOLO después de comprobar SHOW COLUMNS FROM productos.
--- NO ejecutar si hay ventas o pedidos reales ligados a estos productos: esta carga está pensada para datos DEMO.
 SET NAMES utf8mb4;
 USE puntoutil_db;
 
--- Comprobar la estructura antes de la primera ejecución:
--- SHOW COLUMNS FROM categorias;
--- SHOW COLUMNS FROM productos;
-
 START TRANSACTION;
 
--- Insertar solo las categorías que aún no existen:
 INSERT INTO categorias (nombre, activa)
 SELECT lista.nombre, TRUE
 FROM (
@@ -37,7 +23,6 @@ WHERE NOT EXISTS (
   SELECT 1 FROM categorias c WHERE c.nombre = lista.nombre
 );
 
--- Insertar solo códigos nuevos. Los códigos actuales PU... se conservan.
 INSERT INTO productos (codigo, nombre, precio, stock, stock_minimo, categoria_id, activo)
 SELECT semillas.codigo, semillas.nombre, semillas.precio, semillas.stock,
        semillas.stock_minimo, c.id, TRUE
@@ -150,7 +135,6 @@ WHERE NOT EXISTS (
 
 COMMIT;
 
--- Verificación del catálogo de demostración:
 SELECT COUNT(*) AS productos_demo FROM productos WHERE codigo LIKE 'LIB%';
 SELECT c.nombre AS categoria, COUNT(*) AS productos_demo
 FROM productos p INNER JOIN categorias c ON c.id = p.categoria_id

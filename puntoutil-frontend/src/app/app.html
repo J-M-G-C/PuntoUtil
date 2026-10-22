@@ -1,1 +1,82 @@
-<router-outlet></router-outlet>
+<div class="aplicacion">
+
+  <aside class="barra-lateral">
+
+    <div class="marca">
+      <div class="marca-icono">P</div>
+      <div>
+        <h2>PuntoÚtil</h2>
+        <small>Gestión comercial</small>
+      </div>
+    </div>
+
+    <div class="seccion-menu">MENÚ PRINCIPAL</div>
+
+    <nav class="navegacion">
+
+      <a
+        class="opcion"
+        routerLink="/productos"
+        routerLinkActive="activa">
+        <span>📦</span>
+        Productos
+      </a>
+
+      <a
+        class="opcion"
+        routerLink="/categorias"
+        routerLinkActive="activa">
+        <span>📁</span>
+        Categorías
+      </a>
+
+      <div class="opcion pendiente">
+        <span>🏬</span>
+        Inventario
+      </div>
+
+      <div class="opcion pendiente">
+        <span>🛒</span>
+        Ventas
+      </div>
+
+      <div class="opcion pendiente">
+        <span>📋</span>
+        Pedidos
+      </div>
+
+      <div class="opcion pendiente">
+        <span>👥</span>
+        Usuarios
+      </div>
+
+    </nav>
+
+    <div class="nota-lateral">
+      <strong>PuntoÚtil</strong>
+      <p>Sistema de gestión de útiles escolares.</p>
+      <small>Versión en desarrollo</small>
+    </div>
+
+  </aside>
+
+  <div class="contenido">
+
+    <header class="cabecera">
+      <div>
+        <span class="subtitulo">
+          Sistema de administración
+        </span>
+        <h1>PuntoÚtil</h1>
+      </div>
+
+      <div class="indicador">
+        Panel administrativo
+      </div>
+    </header>
+
+    <router-outlet></router-outlet>
+
+  </div>
+
+</div>

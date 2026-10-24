@@ -1,0 +1,87 @@
+{
+  "info": {
+    "_postman_id": "877c739d-f599-49dd-8e1e-aeb1c27a4861",
+    "name": "PuntoUtil - Seguridad y usuarios",
+    "description": "Verifica login, perfil autenticado y acceso permitido/denegado al endpoint de usuarios usando el perfil demo.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8080" },
+    { "key": "token", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Login admin demo",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"usuario\": \"admin\",\n  \"contrasena\": \"DemoAdmin2026!\"\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": "{{baseUrl}}/api/auth/login"
+      },
+      "event": [{
+        "listen": "test",
+        "script": {
+          "type": "text/javascript",
+          "exec": [
+            "pm.test('Login responde 200', function () { pm.response.to.have.status(200); });",
+            "var loginData = pm.response.json();",
+            "pm.test('Devuelve JWT Bearer y rol ADMINISTRADOR', function () { pm.expect(loginData.tipo).to.eql('Bearer'); pm.expect(loginData.token).to.be.a('string').and.not.empty; pm.expect(loginData.rol).to.eql('ADMINISTRADOR'); });",
+            "pm.collectionVariables.set('token', loginData.token);"
+          ]
+        }
+      }],
+      "response": []
+    },
+    {
+      "name": "Consultar mi usuario con JWT",
+      "request": {
+        "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+        "method": "GET",
+        "url": "{{baseUrl}}/api/auth/me"
+      },
+      "event": [{
+        "listen": "test",
+        "script": {
+          "type": "text/javascript",
+          "exec": [
+            "pm.test('El token permite consultar /me', function () { pm.response.to.have.status(200); });",
+            "pm.test('El perfil corresponde al administrador', function () { pm.expect(pm.response.json().rol).to.eql('ADMINISTRADOR'); });"
+          ]
+        }
+      }],
+      "response": []
+    },
+    {
+      "name": "Denegar listado de usuarios sin JWT",
+      "request": { "method": "GET", "url": "{{baseUrl}}/api/usuarios" },
+      "event": [{
+        "listen": "test",
+        "script": { "type": "text/javascript", "exec": ["pm.test('Sin token, el endpoint protegido responde 401', function () { pm.response.to.have.status(401); });"] }
+      }],
+      "response": []
+    },
+    {
+      "name": "Permitir listado de usuarios al administrador",
+      "request": {
+        "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+        "method": "GET",
+        "url": "{{baseUrl}}/api/usuarios"
+      },
+      "event": [{
+        "listen": "test",
+        "script": {
+          "type": "text/javascript",
+          "exec": [
+            "pm.test('El administrador obtiene 200 en el endpoint protegido', function () { pm.response.to.have.status(200); });",
+            "pm.test('La respuesta es una lista de usuarios', function () { pm.expect(pm.response.json()).to.be.an('array'); });"
+          ]
+        }
+      }],
+      "response": []
+    }
+  ]
+}

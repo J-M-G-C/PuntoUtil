@@ -53,11 +53,14 @@ public class VentaService {
                         + ", solicitado: " + item.getCantidad());
             }
 
-            // Uso del servicio de inventario existente para descontar stock y registrar movimiento
-            MovimientoInventarioRequest movimiento = new MovimientoInventarioRequest();
-            movimiento.setProductoId(producto.getId());
-            movimiento.setCantidad(item.getCantidad());
-            inventarioService.registrarSalida(movimiento);
+            // Corrección aplicada: Uso del constructor y registrarMovimiento
+            MovimientoInventarioRequest movimiento = new MovimientoInventarioRequest(
+                    producto.getId(),
+                    TipoMovimiento.SALIDA,
+                    item.getCantidad(),
+                    "Venta presencial"
+            );
+            inventarioService.registrarMovimiento(movimiento);
 
             DetalleVenta detalle = new DetalleVenta();
             detalle.setProducto(producto);

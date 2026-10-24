@@ -2,7 +2,9 @@
 
 La autenticación devuelve un JWT. En las rutas protegidas, envía el token con
 `Authorization: Bearer <token>`. Las contraseñas se almacenan con BCrypt; las
-respuestas de usuarios nunca incluyen el hash.
+respuestas de usuarios nunca incluyen el hash. En el perfil normal, `JWT_SECRET`
+es obligatorio y debe contener al menos 32 bytes aleatorios. La clave del perfil
+demo y la de pruebas son solo para esos entornos.
 
 ## Inicializar el primer administrador
 
@@ -12,7 +14,7 @@ las variables `ADMIN_USERNAME`, `ADMIN_PASSWORD` (mínimo 12 caracteres) y
 
 ```bash
 export DB_PASSWORD='contraseña-de-mysql'
-export JWT_SECRET='una-clave-aleatoria-de-al-menos-32-caracteres'
+export JWT_SECRET="$(openssl rand -base64 48)"
 export ADMIN_USERNAME='admin'
 export ADMIN_PASSWORD='cambia-esta-clave-segura'
 export ADMIN_EMAIL='admin@puntoutil.local'
@@ -23,6 +25,11 @@ Las migraciones Flyway crean la tabla `usuarios`. Si el usuario o el correo ya
 existen, el proceso de inicio no los reemplaza.
 
 ## Probar el login con Postman
+
+Inicia el perfil demo e importa la colección `docs/postman-seguridad.json` en
+Postman. Ejecuta la colección completa para comprobar el login, `/api/auth/me`,
+el rechazo sin token y el acceso autorizado del administrador a `/api/usuarios`.
+La colección usa `admin` / `DemoAdmin2026!` del perfil demo.
 
 Envía `POST http://localhost:8080/api/auth/login` con `Content-Type:
 application/json`:

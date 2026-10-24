@@ -18,7 +18,7 @@ Modulo de **pedidos en linea para recojo en tienda**. Permite registrar un pedid
 ## 2. Archivos principales
 
 ### Base de datos
-- `src/main/resources/db/migration/V4__crear_pedidos.sql`
+- `src/main/resources/db/migration/V5__crear_pedidos.sql`
 
 Crea las tablas `pedidos` y `pedido_detalles`, con claves foraneas a `usuarios` y `productos`, restricciones de estado y de cantidades positivas.
 
@@ -163,7 +163,7 @@ Respuesta: `200 OK`, `Content-Type: application/pdf` y `Content-Disposition: att
 
 ### Base de datos MySQL
 
-Aplicar las migraciones Flyway (incluida `V4__crear_pedidos.sql`) al iniciar la aplicacion:
+Aplicar las migraciones Flyway (incluida `V5__crear_pedidos.sql`) al iniciar la aplicacion:
 
 ```powershell
 $env:DB_PASSWORD="tu_password"

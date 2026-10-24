@@ -48,6 +48,14 @@
 
       <button
         type="button"
+        class="boton-descargar"
+        [disabled]="cargando() || productosFiltrados().length === 0"
+        (click)="descargarInventarioCsv()">
+        ⬇ Descargar Excel (CSV)
+      </button>
+
+      <button
+        type="button"
         class="boton-actualizar"
         (click)="cargarInventario()">
         ↻ Actualizar

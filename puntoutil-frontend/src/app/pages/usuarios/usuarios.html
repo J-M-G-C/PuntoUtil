@@ -1,0 +1,132 @@
+<div class="usuarios-container">
+
+  <!-- ENCABEZADO -->
+  <section class="usuarios-banner">
+    <div>
+      <span class="banner-etiqueta">ADMINISTRACIÓN DEL SISTEMA</span>
+      <h1>Gestión de usuarios</h1>
+      <p>Administra los usuarios y sus permisos dentro de PuntoÚtil.</p>
+    </div>
+
+    <div class="banner-icono">👥</div>
+  </section>
+
+  <!-- TARJETAS ESTADÍSTICAS -->
+  <section class="usuarios-estadisticas">
+
+    <div class="estadistica-card">
+      <span class="estadistica-icono">👥</span>
+      <p>Usuarios registrados</p>
+      <h2>0</h2>
+      <small>Total de usuarios del sistema</small>
+    </div>
+
+    <div class="estadistica-card">
+      <span class="estadistica-icono">✅</span>
+      <p>Usuarios activos</p>
+      <h2>0</h2>
+      <small>Usuarios habilitados</small>
+    </div>
+
+    <div class="estadistica-card">
+      <span class="estadistica-icono">🛡️</span>
+      <p>Administradores</p>
+      <h2>0</h2>
+      <small>Usuarios con permisos administrativos</small>
+    </div>
+
+  </section>
+
+  <!-- LISTADO DE USUARIOS -->
+  <section class="usuarios-panel">
+
+    <div class="panel-header">
+      <div>
+        <h2>Listado de usuarios</h2>
+        <p>Consulta y administra los usuarios registrados.</p>
+      </div>
+
+      <button class="btn-nuevo" type="button">
+        + Nuevo usuario
+      </button>
+    </div>
+
+    <!-- BUSCADOR -->
+    <div class="usuarios-filtros">
+      <input
+        type="text"
+        placeholder="Buscar por usuario, nombre o correo..."
+      />
+    </div>
+
+    <!-- TABLA -->
+    <div class="tabla-contenedor">
+      <table class="usuarios-tabla">
+
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Usuario</th>
+            <th>Nombre</th>
+            <th>Correo electrónico</th>
+            <th>Rol</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+
+        <tbody>
+
+  <tr *ngIf="cargando">
+    <td colspan="7" class="tabla-vacia">
+      Cargando usuarios...
+    </td>
+  </tr>
+
+  <tr *ngIf="!cargando && error">
+    <td colspan="7" class="tabla-vacia">
+      {{ error }}
+    </td>
+  </tr>
+
+  <tr *ngFor="let usuario of usuarios">
+    <td>{{ usuario.id }}</td>
+    <td>{{ usuario.usuario }}</td>
+    <td>{{ usuario.nombre }}</td>
+    <td>{{ usuario.email }}</td>
+    <td>{{ usuario.rol }}</td>
+
+    <td>
+      <span
+        class="estado"
+        [ngClass]="usuario.activo ? 'estado-activo' : 'estado-inactivo'"
+      >
+        {{ usuario.activo ? 'Activo' : 'Inactivo' }}
+      </span>
+    </td>
+
+    <td>
+      <button class="btn-editar" type="button" disabled>
+        ✏️ Editar
+      </button>
+    </td>
+  </tr>
+
+  <tr *ngIf="!cargando && !error && usuarios.length === 0">
+    <td colspan="7" class="tabla-vacia">
+      No se encontraron usuarios.
+    </td>
+  </tr>
+
+</tbody>
+
+      </table>
+    </div>
+
+    <div class="panel-footer">
+  Mostrando {{ totalUsuarios }} usuarios
+    </div>
+
+  </section>
+
+</div>

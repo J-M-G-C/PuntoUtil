@@ -1,0 +1,842 @@
+{
+  "info": {
+    "name": "PuntoUtil - Modulo de Pedidos",
+    "_postman_id": "c2e9e1b8-7d4a-4f6b-9f0e-2f3a7d9b1c55",
+    "description": "Coleccion de pruebas del modulo de pedidos en linea para recojo en tienda.\n\nCubre: registro de pedidos, codigo de seguimiento, estados PENDIENTE/LISTO/ENTREGADO/CANCELADO, validacion de stock, descuento unico al confirmar la entrega, PDF de confirmacion (no boleta SUNAT) y permisos por rol.\n\nRequisitos:\n- Backend en {{baseUrl}}.\n- Variables adminUsuario/adminContrasena con un administrador valido.\n- Ejecutar la coleccion en orden: la carpeta 1 crea usuarios y producto, la carpeta 2 ejecuta el flujo principal y la 3 valida errores.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8080", "type": "string" },
+    { "key": "adminUsuario", "value": "admin", "type": "string" },
+    { "key": "adminContrasena", "value": "ClaveSegura2026", "type": "string" },
+    { "key": "vendedorUsuario", "value": "vendedor.pedidos", "type": "string" },
+    { "key": "vendedorContrasena", "value": "ClaveVendedor2026", "type": "string" },
+    { "key": "clienteUsuario", "value": "cliente.pedidos", "type": "string" },
+    { "key": "clienteContrasena", "value": "ClaveCliente2026", "type": "string" },
+    { "key": "tokenAdmin", "value": "", "type": "string" },
+    { "key": "tokenVendedor", "value": "", "type": "string" },
+    { "key": "tokenCliente", "value": "", "type": "string" },
+    { "key": "productoId", "value": "", "type": "string" },
+    { "key": "stockInicial", "value": "", "type": "string" },
+    { "key": "pedidoId", "value": "", "type": "string" },
+    { "key": "codigoSeguimiento", "value": "", "type": "string" },
+    { "key": "pedidoCancelarId", "value": "", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "1. Preparacion",
+      "item": [
+        {
+          "name": "Login administrador",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Login admin responde 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "const json = pm.response.json();",
+                  "pm.test('Devuelve token Bearer', function () {",
+                  "    pm.expect(json.token).to.be.a('string').and.not.empty;",
+                  "    pm.expect(json.tipo).to.eql('Bearer');",
+                  "});",
+                  "pm.collectionVariables.set('tokenAdmin', json.token);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"usuario\": \"{{adminUsuario}}\",\n  \"contrasena\": \"{{adminContrasena}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            },
+            "description": "Obtiene el JWT del administrador configurado en las variables."
+          }
+        },
+        {
+          "name": "Crear vendedor",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Vendedor creado o ya existente', function () {",
+                  "    pm.expect([201, 409]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{tokenAdmin}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"usuario\": \"{{vendedorUsuario}}\",\n  \"nombre\": \"Vendedor Pedidos\",\n  \"email\": \"vendedor.pedidos@puntoutil.test\",\n  \"contrasena\": \"{{vendedorContrasena}}\",\n  \"rol\": \"VENDEDOR\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/usuarios",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "usuarios"]
+            }
+          }
+        },
+        {
+          "name": "Crear cliente",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Cliente creado o ya existente', function () {",
+                  "    pm.expect([201, 409]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{tokenAdmin}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"usuario\": \"{{clienteUsuario}}\",\n  \"nombre\": \"Cliente Pedidos\",\n  \"email\": \"cliente.pedidos@puntoutil.test\",\n  \"contrasena\": \"{{clienteContrasena}}\",\n  \"rol\": \"CLIENTE\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/usuarios",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "usuarios"]
+            }
+          }
+        },
+        {
+          "name": "Login vendedor",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Login vendedor responde 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.collectionVariables.set('tokenVendedor', pm.response.json().token);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"usuario\": \"{{vendedorUsuario}}\",\n  \"contrasena\": \"{{vendedorContrasena}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "Login cliente",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Login cliente responde 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.collectionVariables.set('tokenCliente', pm.response.json().token);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"usuario\": \"{{clienteUsuario}}\",\n  \"contrasena\": \"{{clienteContrasena}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "Crear producto de prueba",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Producto creado', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "const json = pm.response.json();",
+                  "pm.collectionVariables.set('productoId', json.id);",
+                  "pm.collectionVariables.set('stockInicial', json.stock);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{tokenAdmin}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"codigo\": \"PED-{{$timestamp}}\",\n  \"nombre\": \"Cuaderno de pruebas\",\n  \"precio\": 5.50,\n  \"stock\": 20,\n  \"stockMinimo\": 2\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/productos",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "productos"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Flujo principal del pedido",
+      "item": [
+        {
+          "name": "Registrar pedido (cliente)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Pedido registrado', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "const json = pm.response.json();",
+                  "pm.test('Estado inicial PENDIENTE', function () {",
+                  "    pm.expect(json.estado).to.eql('PENDIENTE');",
+                  "});",
+                  "pm.test('Total calculado', function () {",
+                  "    pm.expect(Number(json.total)).to.eql(27.50);",
+                  "});",
+                  "pm.test('Codigo de seguimiento generado', function () {",
+                  "    pm.expect(json.codigoSeguimiento).to.match(/^PU-/);",
+                  "});",
+                  "pm.collectionVariables.set('pedidoId', json.id);",
+                  "pm.collectionVariables.set('codigoSeguimiento', json.codigoSeguimiento);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{tokenCliente}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombreCliente\": \"Ana Torres\",\n  \"dni\": \"76543210\",\n  \"telefono\": \"987654321\",\n  \"correo\": \"ana@example.com\",\n  \"observaciones\": \"Recojo por la tarde\",\n  \"detalles\": [\n    { \"productoId\": {{productoId}}, \"cantidad\": 5 }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/pedidos",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "pedidos"]
+            }
+          }
+        },
+        {
+          "name": "Verificar que el stock no cambio al registrar",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Stock intacto antes de la entrega', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(Number(pm.response.json().stock)).to.eql(Number(pm.collectionVariables.get('stockInicial')));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/productos/{{productoId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "productos", "{{productoId}}"]
+            }
+          }
+        },
+        {
+          "name": "Consultar pedido por ID (vendedor)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Consulta por ID exitosa', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(pm.response.json().id).to.eql(Number(pm.collectionVariables.get('pedidoId')));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{tokenVendedor}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/pedidos/{{pedidoId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "pedidos", "{{pedidoId}}"]
+            }
+          }
+        },
+        {
+          "name": "Consultar pedido por codigo de seguimiento",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Consulta por codigo exitosa', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(pm.response.json().codigoSeguimiento).to.eql(pm.collectionVariables.get('codigoSeguimiento'));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{tokenVendedor}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/pedidos/seguimiento/{{codigoSeguimiento}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "pedidos", "seguimiento", "{{codigoSeguimiento}}"]
+            }
+          }
+        },
+        {
+          "name": "Listar pedidos",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Listado de pedidos', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(pm.response.json()).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{tokenVendedor}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/pedidos",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "pedidos"]
+            }
+          }
+        },
+        {
+          "name": "Listar pedidos PENDIENTES",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Filtro por estado', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    const pedidos = pm.response.json();",
+                  "    pm.expect(pedidos.every(p => p.estado === 'PENDIENTE')).to.eql(true);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{tokenVendedor}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/pedidos?estado=PENDIENTE",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "pedidos"],
+              "query": [
+                { "key": "estado", "value": "PENDIENTE" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Marcar pedido como LISTO",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Pedido LISTO', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(pm.response.json().estado).to.eql('LISTO');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{tokenVendedor}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estado\": \"LISTO\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/pedidos/{{pedidoId}}/estado",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "pedidos", "{{pedidoId}}", "estado"]
+            }
+          }
+        },
+        {
+          "name": "Descargar PDF de confirmacion",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('PDF generado', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/pdf');",
+                  "});",
+                  "pm.test('El PDF contiene datos', function () {",
+                  "    pm.expect(pm.response.responseSize).to.be.above(1000);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{tokenVendedor}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/pedidos/{{pedidoId}}/pdf",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "pedidos", "{{pedidoId}}", "pdf"]
+            },
+            "description": "Documento de confirmacion del pedido. No es boleta ni factura SUNAT."
+          }
+        },
+        {
+          "name": "Confirmar entrega",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Entrega confirmada', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.estado).to.eql('ENTREGADO');",
+                  "    pm.expect(json.fechaEntrega).to.not.be.null;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{tokenVendedor}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/pedidos/{{pedidoId}}/entregar",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "pedidos", "{{pedidoId}}", "entregar"]
+            }
+          }
+        },
+        {
+          "name": "Verificar descuento unico de stock",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Stock descontado una sola vez', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    const esperado = Number(pm.collectionVariables.get('stockInicial')) - 5;",
+                  "    pm.expect(Number(pm.response.json().stock)).to.eql(esperado);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/productos/{{productoId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "productos", "{{productoId}}"]
+            }
+          }
+        },
+        {
+          "name": "Descargar PDF por codigo de seguimiento",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('PDF por codigo generado', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/pdf');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{tokenVendedor}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/pedidos/seguimiento/{{codigoSeguimiento}}/pdf",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "pedidos", "seguimiento", "{{codigoSeguimiento}}", "pdf"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Reglas de negocio y errores",
+      "item": [
+        {
+          "name": "Segunda entrega rechazada (no descuenta dos veces)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Segunda entrega rechazada', function () {",
+                  "    pm.response.to.have.status(409);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{tokenVendedor}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/pedidos/{{pedidoId}}/entregar",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "pedidos", "{{pedidoId}}", "entregar"]
+            }
+          }
+        },
+        {
+          "name": "Registrar segundo pedido para cancelar",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Segundo pedido registrado', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "pm.collectionVariables.set('pedidoCancelarId', pm.response.json().id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{tokenCliente}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombreCliente\": \"Luis Ramos\",\n  \"dni\": \"12345678\",\n  \"telefono\": \"999888777\",\n  \"correo\": \"luis@example.com\",\n  \"detalles\": [\n    { \"productoId\": {{productoId}}, \"cantidad\": 2 }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/pedidos",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "pedidos"]
+            }
+          }
+        },
+        {
+          "name": "Cancelar pedido",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Pedido cancelado', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(pm.response.json().estado).to.eql('CANCELADO');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{tokenVendedor}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/pedidos/{{pedidoCancelarId}}/cancelar",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "pedidos", "{{pedidoCancelarId}}", "cancelar"]
+            }
+          }
+        },
+        {
+          "name": "Verificar que cancelar no altera el stock",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Stock sin cambios tras cancelar', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    const esperado = Number(pm.collectionVariables.get('stockInicial')) - 5;",
+                  "    pm.expect(Number(pm.response.json().stock)).to.eql(esperado);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/productos/{{productoId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "productos", "{{productoId}}"]
+            }
+          }
+        },
+        {
+          "name": "Entregar pedido cancelado (conflicto)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Transicion invalida rechazada', function () {",
+                  "    pm.response.to.have.status(409);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{tokenVendedor}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/pedidos/{{pedidoCancelarId}}/entregar",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "pedidos", "{{pedidoCancelarId}}", "entregar"]
+            }
+          }
+        },
+        {
+          "name": "Pedido sin stock suficiente",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Stock insuficiente rechazado', function () {",
+                  "    pm.response.to.have.status(409);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{tokenCliente}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombreCliente\": \"Sin Stock\",\n  \"detalles\": [\n    { \"productoId\": {{productoId}}, \"cantidad\": 9999 }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/pedidos",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "pedidos"]
+            }
+          }
+        },
+        {
+          "name": "Pedido con detalle vacio (validacion)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Solicitud invalida', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{tokenCliente}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombreCliente\": \"Pedido vacio\",\n  \"detalles\": []\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/pedidos",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "pedidos"]
+            }
+          }
+        },
+        {
+          "name": "Cliente no puede cambiar el estado",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Cambio de estado prohibido para cliente', function () {",
+                  "    pm.response.to.have.status(403);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{tokenCliente}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estado\": \"CANCELADO\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/pedidos/{{pedidoId}}/estado",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "pedidos", "{{pedidoId}}", "estado"]
+            }
+          }
+        },
+        {
+          "name": "Consultar pedidos sin token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Requiere autenticacion', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/pedidos",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "pedidos"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

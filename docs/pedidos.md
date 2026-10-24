@@ -180,7 +180,7 @@ $env:ADMIN_EMAIL="admin@puntoutil.test"
 .\mvnw.cmd test
 ```
 
-Resultado esperado: **18 pruebas, 0 fallos**. Incluye 7 pruebas de integracion del modulo de pedidos.
+Resultado esperado: **19 pruebas, 0 fallos**. Incluye 8 pruebas de integracion del modulo de pedidos (estados, stock, PDF y acceso entre clientes).
 
 ## 8. Pruebas con Postman
 
@@ -197,7 +197,7 @@ Orden de la coleccion:
 
 ### Evidencia de la ultima ejecucion
 
-Se ejecuto la API real en `http://localhost:8080` y se validaron las 27 comprobaciones equivalentes a la coleccion:
+Se ejecuto la API real en `http://localhost:8080` y se validaron las 28 comprobaciones equivalentes a la coleccion:
 
 ```text
 OK: registrar pedido (201)

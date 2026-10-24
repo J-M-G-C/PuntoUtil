@@ -100,7 +100,17 @@ public class PedidoService {
                 );
             }
 
-            cantidades.merge(detalle.productoId(), cantidad, Integer::sum);
+            long cantidadAcumulada = (long) cantidades.getOrDefault(
+                    detalle.productoId(), 0) + cantidad;
+
+            if (cantidadAcumulada > Integer.MAX_VALUE) {
+                throw new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST,
+                        "La cantidad total por producto excede el maximo permitido"
+                );
+            }
+
+            cantidades.put(detalle.productoId(), (int) cantidadAcumulada);
         }
 
         Pedido pedido = new Pedido();

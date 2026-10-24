@@ -97,6 +97,29 @@ class PedidoIntegrationTest {
     }
 
     @Test
+    void clienteNoPuedeConsultarPedidosDeOtroCliente() throws Exception {
+        Long pedidoId = crearPedido();
+
+        Usuario otroCliente = new Usuario();
+        otroCliente.setUsuario("cliente2");
+        otroCliente.setPasswordHash(passwordEncoder.encode("ClaveCliente2026"));
+        otroCliente.setNombre("Otro Cliente");
+        otroCliente.setEmail("cliente2@puntoutil.test");
+        otroCliente.setRol(Rol.CLIENTE);
+        otroCliente.setActivo(true);
+        usuarioRepository.save(otroCliente);
+
+        mockMvc.perform(get("/api/pedidos/{id}", pedidoId)
+                        .with(user("cliente2").authorities(() -> "ROLE_CLIENTE")))
+                .andExpect(status().isForbidden());
+
+        mockMvc.perform(get("/api/pedidos")
+                        .with(user("cliente2").authorities(() -> "ROLE_CLIENTE")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(0));
+    }
+
+    @Test
     void registraPedidoConCodigoDeSeguimientoSinDescontarStock() throws Exception {
         String response = registrarPedido(3)
                 .andExpect(status().isCreated())

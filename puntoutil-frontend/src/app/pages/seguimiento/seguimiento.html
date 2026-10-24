@@ -1,0 +1,127 @@
+<main class="principal">
+  <section class="bienvenida">
+    <div>
+      <p class="etiqueta">CONSULTA EN TIEMPO REAL</p>
+      <h2>Seguimiento de pedidos</h2>
+      <p>Conoce el estado de un pedido y descarga su confirmación.</p>
+    </div>
+    <div class="bienvenida-icono">🔎</div>
+  </section>
+
+  <section class="panel seguimiento-buscador">
+    <div class="panel-superior">
+      <div>
+        <h2>Buscar pedido</h2>
+        <p>Utiliza el código entregado al registrar la solicitud</p>
+      </div>
+    </div>
+    <form class="buscador-fila" (ngSubmit)="consultar()">
+      <div class="campo">
+        <label for="codigo-seguimiento">Código de seguimiento</label
+        ><input
+          id="codigo-seguimiento"
+          name="codigo"
+          [(ngModel)]="codigo"
+          required
+          placeholder="PU-20261023-XXXX"
+        />
+      </div>
+      <button class="boton-primario" type="submit" [disabled]="buscando()">
+        {{ buscando() ? 'Consultando...' : 'Consultar pedido' }}
+      </button>
+    </form>
+  </section>
+
+  @if (error()) {
+    <div class="alerta alerta-error" role="alert">{{ error() }}</div>
+  }
+
+  @if (pedido(); as actual) {
+    <section class="panel seguimiento-resultado">
+      <div class="panel-superior">
+        <div>
+          <p class="etiqueta-naranja">PEDIDO ENCONTRADO</p>
+          <h2>{{ actual.codigoSeguimiento }}</h2>
+          <p>Registrado el {{ actual.fechaCreacion | date: 'dd/MM/yyyy HH:mm' }}</p>
+        </div>
+        <button type="button" class="boton-secundario" (click)="descargarPdf()">
+          ⬇ Descargar PDF
+        </button>
+      </div>
+      <div class="formulario-contenido">
+        <div class="resumen-ficha">
+          <div>
+            <span>Cliente</span><strong>{{ actual.nombreCliente }}</strong>
+          </div>
+          <div>
+            <span>Estado actual</span
+            ><span
+              class="etiqueta-estado"
+              [class.pendiente]="actual.estado === 'PENDIENTE'"
+              [class.listo]="actual.estado === 'LISTO'"
+              [class.cancelado]="actual.estado === 'CANCELADO'"
+              >{{ actual.estado }}</span
+            >
+          </div>
+          <div>
+            <span>Total</span><strong>S/ {{ actual.total | number: '1.2-2' }}</strong>
+          </div>
+        </div>
+
+        @if (actual.estado === 'CANCELADO') {
+          <div class="alerta alerta-error">
+            Este pedido fue cancelado. No se realizará la entrega.
+          </div>
+        } @else {
+          <div class="linea-estados">
+            @for (estado of estados; track estado) {
+              <div class="paso-estado" [class.paso-completo]="completado(estado, actual.estado)">
+                <span class="paso-circulo">{{
+                  completado(estado, actual.estado) ? '✓' : '·'
+                }}</span>
+                <strong>{{
+                  estado === 'PENDIENTE'
+                    ? 'Registrado'
+                    : estado === 'LISTO'
+                      ? 'Listo para recojo'
+                      : 'Entregado'
+                }}</strong>
+              </div>
+            }
+          </div>
+        }
+
+        <h3 class="subseccion-titulo">Productos del pedido</h3>
+        <div class="tabla-contenedor">
+          <table>
+            <thead>
+              <tr>
+                <th>Producto</th>
+                <th>Código</th>
+                <th>Cantidad</th>
+                <th>Subtotal</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (detalle of actual.detalles; track detalle.id) {
+                <tr>
+                  <td>{{ detalle.nombreProducto }}</td>
+                  <td class="codigo">{{ detalle.codigoProducto }}</td>
+                  <td>{{ detalle.cantidad }}</td>
+                  <td>S/ {{ detalle.subtotal | number: '1.2-2' }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        @if (actual.observaciones) {
+          <p class="observaciones"><strong>Observaciones:</strong> {{ actual.observaciones }}</p>
+        }
+        <p class="texto-secundario">
+          El PDF confirma el pedido; no constituye una boleta o factura SUNAT.
+        </p>
+        <a routerLink="/pedidos" class="enlace-volver">← Volver a pedidos</a>
+      </div>
+    </section>
+  }
+</main>

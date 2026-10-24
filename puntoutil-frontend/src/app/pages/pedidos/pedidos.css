@@ -1,0 +1,22 @@
+:host {
+  display: block;
+}
+.campo-final {
+  justify-content: end;
+}
+.panel-separado {
+  margin-top: 24px;
+}
+.acciones-derecha {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 18px;
+}
+.enlace-codigo {
+  color: #d87920;
+  font-weight: 700;
+  text-decoration: none;
+}
+.enlace-codigo:hover {
+  text-decoration: underline;
+}

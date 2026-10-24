@@ -1,7 +1,5 @@
 <div class="aplicacion">
-
   <aside class="barra-lateral">
-
     <div class="marca">
       <div class="marca-icono">P</div>
       <div>
@@ -12,74 +10,61 @@
 
     <div class="seccion-menu">MENÚ PRINCIPAL</div>
 
-    <nav class="navegacion">
-
-      <a
-        class="opcion"
-        routerLink="/productos"
-        routerLinkActive="activa">
-        <span>📦</span>
-        Productos
-      </a>
-
-      <a
-        class="opcion"
-        routerLink="/categorias"
-        routerLinkActive="activa">
-        <span>📁</span>
-        Categorías
-      </a>
-
-      <div class="opcion pendiente">
-        <span>🏬</span>
-        Inventario
-      </div>
-
-      <div class="opcion pendiente">
-        <span>🛒</span>
-        Ventas
-      </div>
-
-      <div class="opcion pendiente">
-        <span>📋</span>
-        Pedidos
-      </div>
-
-      <a
-        class="opcion"
-        routerLink="/inventario"
-        routerLinkActive="activa">
-        <span>🏬</span>
-        Inventario
-      </a>
-
+    <nav class="navegacion" aria-label="Navegación principal">
+      <a class="opcion" routerLink="/productos" routerLinkActive="activa"
+        ><span>📦</span>Productos</a
+      >
+      <a class="opcion" routerLink="/categorias" routerLinkActive="activa"
+        ><span>📁</span>Categorías</a
+      >
+      <a class="opcion" routerLink="/inventario" routerLinkActive="activa"
+        ><span>🏬</span>Inventario</a
+      >
+      @if (auth.puede('ADMINISTRADOR', 'VENDEDOR')) {
+        <a class="opcion" routerLink="/ventas" routerLinkActive="activa"><span>🛒</span>Ventas</a>
+      }
+      @if (auth.puede('ADMINISTRADOR', 'VENDEDOR', 'CLIENTE')) {
+        <a class="opcion" routerLink="/pedidos" routerLinkActive="activa"><span>📋</span>Pedidos</a>
+        <a class="opcion" routerLink="/seguimiento" routerLinkActive="activa"
+          ><span>🔎</span>Seguimiento</a
+        >
+      }
+      @if (auth.puede('ADMINISTRADOR')) {
+        <a class="opcion" routerLink="/usuarios" routerLinkActive="activa"
+          ><span>👥</span>Usuarios</a
+        >
+      }
     </nav>
 
     <div class="nota-lateral">
       <strong>PuntoÚtil</strong>
-      <p>Sistema de gestión de útiles escolares.</p>
-      <small>Versión en desarrollo</small>
+      <p>Ventas, inventario y pedidos en un solo lugar.</p>
+      <small>Grupo 5 · UNFV</small>
     </div>
-
   </aside>
 
   <div class="contenido">
-
     <header class="cabecera">
       <div>
-        <span class="subtitulo">
-          Sistema de administración
-        </span>
+        <span class="subtitulo">Sistema de administración</span>
         <h1>PuntoÚtil</h1>
       </div>
-
-      <div class="indicador">
-        Panel administrativo
+      <div class="cabecera-acciones">
+        @if (auth.autenticado()) {
+          <div class="sesion-usuario">
+            <span class="sesion-avatar">{{ auth.nombre().charAt(0).toUpperCase() }}</span>
+            <div>
+              <strong>{{ auth.nombre() }}</strong>
+              <small>{{ auth.rol() }}</small>
+            </div>
+          </div>
+          <button type="button" class="boton-salir" (click)="salir()">Cerrar sesión</button>
+        } @else {
+          <a routerLink="/login" class="boton-acceso">Iniciar sesión</a>
+        }
       </div>
     </header>
 
     <router-outlet></router-outlet>
-
   </div>
-
 </div>

@@ -1,0 +1,49 @@
+<main class="principal acceso-pagina">
+  <section class="acceso-tarjeta">
+    <div class="acceso-simbolo">🔐</div>
+    <p class="etiqueta-naranja">ACCESO AL SISTEMA</p>
+    <h2>Bienvenido a PuntoÚtil</h2>
+    <p class="texto-secundario">
+      Inicia sesión para gestionar ventas, pedidos y usuarios según tu perfil.
+    </p>
+
+    <form (ngSubmit)="ingresar()" #form="ngForm" class="formulario-apilado">
+      <label for="usuario">Nombre de usuario</label>
+      <input
+        id="usuario"
+        type="text"
+        name="usuario"
+        [(ngModel)]="usuario"
+        required
+        autocomplete="username"
+        placeholder="Ingresa tu usuario"
+      />
+
+      <label for="contrasena">Contraseña</label>
+      <input
+        id="contrasena"
+        type="password"
+        name="contrasena"
+        [(ngModel)]="contrasena"
+        required
+        autocomplete="current-password"
+        placeholder="Ingresa tu contraseña"
+      />
+
+      @if (error()) {
+        <p class="alerta alerta-error" role="alert">{{ error() }}</p>
+      }
+
+      <button
+        class="boton-primario boton-ancho"
+        type="submit"
+        [disabled]="form.invalid || enviando()"
+      >
+        {{ enviando() ? 'Verificando...' : 'Ingresar al sistema' }}
+      </button>
+    </form>
+
+    <p class="acceso-ayuda">¿Necesitas una cuenta? Solicítala al administrador de PuntoÚtil.</p>
+    <a routerLink="/productos" class="enlace-sutil">← Volver al catálogo</a>
+  </section>
+</main>

@@ -1,5 +1,6 @@
 package pe.edu.cibertec.puntoutil.controller;
 
+import jakarta.validation.Valid;
 import pe.edu.cibertec.puntoutil.dto.VentaRequest;
 import pe.edu.cibertec.puntoutil.entity.Venta;
 import pe.edu.cibertec.puntoutil.service.VentaService;
@@ -19,7 +20,7 @@ public class VentaController {
     private VentaService ventaService;
 
     @PostMapping
-    public ResponseEntity<?> registrarVenta(@RequestBody VentaRequest request) {
+    public ResponseEntity<?> registrarVenta(@Valid @RequestBody VentaRequest request) {
         try {
             Venta nuevaVenta = ventaService.registrarVenta(request);
             return new ResponseEntity<>(nuevaVenta, HttpStatus.CREATED);

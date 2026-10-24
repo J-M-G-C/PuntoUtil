@@ -3,6 +3,7 @@ package pe.edu.cibertec.puntoutil.service;
 import pe.edu.cibertec.puntoutil.dto.DetalleVentaRequest;
 import pe.edu.cibertec.puntoutil.dto.MovimientoInventarioRequest;
 import pe.edu.cibertec.puntoutil.dto.VentaRequest;
+import pe.edu.cibertec.puntoutil.entity.TipoMovimiento;
 import pe.edu.cibertec.puntoutil.entity.DetalleVenta;
 import pe.edu.cibertec.puntoutil.entity.Producto;
 import pe.edu.cibertec.puntoutil.entity.Venta;

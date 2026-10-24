@@ -1,0 +1,12 @@
+:host {
+  display: block;
+}
+.panel-formulario {
+  align-self: start;
+}
+.campo-final {
+  justify-content: end;
+}
+.resumen-total {
+  margin-top: 24px;
+}

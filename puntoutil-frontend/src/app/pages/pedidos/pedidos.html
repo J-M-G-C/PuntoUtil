@@ -1,0 +1,302 @@
+<main class="principal">
+  <section class="bienvenida">
+    <div>
+      <p class="etiqueta">PEDIDOS PARA RECOJO EN TIENDA</p>
+      <h2>Gestión de pedidos</h2>
+      <p>Registra solicitudes, prepara los productos y controla cada entrega.</p>
+    </div>
+    <div class="bienvenida-icono">📋</div>
+  </section>
+
+  <section class="estadisticas">
+    <div class="tarjeta">
+      <span class="tarjeta-icono">📑</span>
+      <p>Pedidos registrados</p>
+      <h3>{{ pedidos().length }}</h3>
+      <small>Visibles para tu usuario</small>
+    </div>
+    <div class="tarjeta">
+      <span class="tarjeta-icono">⏳</span>
+      <p>Por preparar</p>
+      <h3>{{ pendientes() }}</h3>
+      <small>Pedidos pendientes</small>
+    </div>
+    <div class="tarjeta">
+      <span class="tarjeta-icono">🛍️</span>
+      <p>Importe del nuevo pedido</p>
+      <h3>S/ {{ total() | number: '1.2-2' }}</h3>
+      <small>Sin descuento de stock todavía</small>
+    </div>
+  </section>
+
+  @if (error()) {
+    <div class="alerta alerta-error" role="alert">{{ error() }}</div>
+  }
+  @if (exito()) {
+    <div class="alerta alerta-exito" role="status">
+      {{ exito() }}
+      @if (ultimoCodigo()) {
+        <a [routerLink]="['/seguimiento']" [queryParams]="{ codigo: ultimoCodigo() }"
+          >Ver seguimiento</a
+        >
+      }
+    </div>
+  }
+
+  <section class="panel panel-separado">
+    <div class="panel-superior">
+      <div>
+        <h2>Registrar nuevo pedido</h2>
+        <p>La confirmación generará un código único de seguimiento</p>
+      </div>
+    </div>
+    <div class="formulario-contenido">
+      <form (ngSubmit)="crear()" #pedidoForm="ngForm">
+        <div class="formulario-grid">
+          <div class="campo">
+            <label for="pedido-nombre">Nombre del cliente *</label
+            ><input
+              id="pedido-nombre"
+              name="nombreCliente"
+              [(ngModel)]="nombreCliente"
+              required
+              maxlength="150"
+              placeholder="Nombre y apellidos"
+            />
+          </div>
+          <div class="campo">
+            <label for="pedido-dni">DNI</label
+            ><input
+              id="pedido-dni"
+              name="dni"
+              [(ngModel)]="dni"
+              maxlength="15"
+              placeholder="Documento de identidad"
+            />
+          </div>
+          <div class="campo">
+            <label for="pedido-telefono">Teléfono</label
+            ><input
+              id="pedido-telefono"
+              name="telefono"
+              [(ngModel)]="telefono"
+              maxlength="20"
+              placeholder="Número de contacto"
+            />
+          </div>
+          <div class="campo">
+            <label for="pedido-correo">Correo</label
+            ><input
+              id="pedido-correo"
+              type="email"
+              name="correo"
+              [(ngModel)]="correo"
+              email
+              maxlength="160"
+              placeholder="cliente@correo.com"
+            />
+          </div>
+          <div class="campo campo-ancho">
+            <label for="pedido-observaciones">Observaciones</label
+            ><textarea
+              id="pedido-observaciones"
+              name="observaciones"
+              [(ngModel)]="observaciones"
+              rows="2"
+              maxlength="255"
+              placeholder="Indicaciones para el recojo"
+            ></textarea>
+          </div>
+        </div>
+
+        <h3 class="subseccion-titulo">Productos solicitados</h3>
+        <div class="formulario-grid">
+          <div class="campo campo-ancho">
+            <label for="pedido-producto">Producto</label
+            ><select id="pedido-producto" name="productoId" [(ngModel)]="productoId">
+              <option [ngValue]="null">Seleccionar producto</option>
+              @for (producto of disponibles(); track producto.id) {
+                <option [ngValue]="producto.id">
+                  {{ producto.nombre }} · S/ {{ producto.precio | number: '1.2-2' }} · Stock
+                  {{ producto.stock }}
+                </option>
+              }
+            </select>
+          </div>
+          <div class="campo">
+            <label for="pedido-cantidad">Cantidad</label
+            ><input
+              id="pedido-cantidad"
+              name="cantidad"
+              type="number"
+              min="1"
+              step="1"
+              [(ngModel)]="cantidad"
+            />
+          </div>
+          <div class="campo campo-final">
+            <button class="boton-secundario" type="button" (click)="agregar()">
+              + Agregar producto
+            </button>
+          </div>
+        </div>
+
+        @if (!carrito().length) {
+          <div class="estado-vacio">No has agregado productos al pedido.</div>
+        } @else {
+          <div class="tabla-contenedor">
+            <table>
+              <thead>
+                <tr>
+                  <th>Producto</th>
+                  <th>Cantidad</th>
+                  <th>Precio</th>
+                  <th>Subtotal</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (item of carrito(); track item.producto.id) {
+                  <tr>
+                    <td>{{ item.producto.nombre }}</td>
+                    <td>{{ item.cantidad }}</td>
+                    <td>S/ {{ item.producto.precio | number: '1.2-2' }}</td>
+                    <td>S/ {{ item.producto.precio * item.cantidad | number: '1.2-2' }}</td>
+                    <td>
+                      <button
+                        type="button"
+                        class="boton-texto-peligro"
+                        (click)="quitar(item.producto.id)"
+                      >
+                        Quitar
+                      </button>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+
+        <div class="resumen-total">
+          <span>Total del pedido</span><strong>S/ {{ total() | number: '1.2-2' }}</strong>
+        </div>
+        <div class="acciones-derecha">
+          <button
+            class="boton-primario"
+            type="submit"
+            [disabled]="pedidoForm.invalid || !carrito().length || enviando()"
+          >
+            {{ enviando() ? 'Registrando...' : 'Registrar pedido' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <section class="panel panel-separado">
+    <div class="panel-superior">
+      <div>
+        <h2>Pedidos registrados</h2>
+        <p>Seguimiento de solicitudes y entregas</p>
+      </div>
+      <div class="acciones-flex">
+        <select
+          aria-label="Filtrar estado"
+          [ngModel]="filtroEstado()"
+          (ngModelChange)="filtroEstado.set($event)"
+        >
+          <option value="">Todos los estados</option>
+          <option value="PENDIENTE">Pendientes</option>
+          <option value="LISTO">Listos</option>
+          <option value="ENTREGADO">Entregados</option>
+          <option value="CANCELADO">Cancelados</option></select
+        ><button type="button" class="boton-actualizar" (click)="actualizar()">↻ Actualizar</button>
+      </div>
+    </div>
+    @if (!pedidosFiltrados().length) {
+      <div class="estado-vacio">No se encontraron pedidos.</div>
+    } @else {
+      <div class="tabla-contenedor">
+        <table>
+          <thead>
+            <tr>
+              <th>Código</th>
+              <th>Cliente</th>
+              <th>Fecha</th>
+              <th>Estado</th>
+              <th>Total</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (pedido of pedidosFiltrados(); track pedido.id) {
+              <tr>
+                <td>
+                  <a
+                    [routerLink]="['/seguimiento']"
+                    [queryParams]="{ codigo: pedido.codigoSeguimiento }"
+                    class="enlace-codigo"
+                    >{{ pedido.codigoSeguimiento }}</a
+                  >
+                </td>
+                <td>{{ pedido.nombreCliente }}</td>
+                <td>{{ pedido.fechaCreacion | date: 'dd/MM/yyyy HH:mm' }}</td>
+                <td>
+                  <span
+                    class="etiqueta-estado"
+                    [class.pendiente]="pedido.estado === 'PENDIENTE'"
+                    [class.listo]="pedido.estado === 'LISTO'"
+                    [class.cancelado]="pedido.estado === 'CANCELADO'"
+                    >{{ pedido.estado }}</span
+                  >
+                </td>
+                <td>S/ {{ pedido.total | number: '1.2-2' }}</td>
+                <td>
+                  <div class="acciones-tabla">
+                    <button type="button" class="boton-enlace" (click)="descargarPdf(pedido)">
+                      PDF
+                    </button>
+                    @if (auth.puede('ADMINISTRADOR', 'VENDEDOR') && pedido.estado === 'PENDIENTE') {
+                      <button
+                        type="button"
+                        class="boton-enlace"
+                        [disabled]="procesandoId() !== null"
+                        (click)="cambiarEstado(pedido, 'LISTO')"
+                      >
+                        Marcar listo
+                      </button>
+                    }
+                    @if (auth.puede('ADMINISTRADOR', 'VENDEDOR') && pedido.estado === 'LISTO') {
+                      <button
+                        type="button"
+                        class="boton-enlace"
+                        [disabled]="procesandoId() !== null"
+                        (click)="cambiarEstado(pedido, 'ENTREGADO')"
+                      >
+                        Entregar
+                      </button>
+                    }
+                    @if (
+                      auth.puede('ADMINISTRADOR', 'VENDEDOR') &&
+                      (pedido.estado === 'PENDIENTE' || pedido.estado === 'LISTO')
+                    ) {
+                      <button
+                        type="button"
+                        class="boton-texto-peligro"
+                        [disabled]="procesandoId() !== null"
+                        (click)="cambiarEstado(pedido, 'CANCELADO')"
+                      >
+                        Cancelar
+                      </button>
+                    }
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </section>
+</main>

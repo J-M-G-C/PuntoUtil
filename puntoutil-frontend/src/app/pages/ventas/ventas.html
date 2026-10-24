@@ -1,0 +1,165 @@
+<main class="principal">
+  <section class="bienvenida">
+    <div>
+      <p class="etiqueta">OPERACIONES COMERCIALES</p>
+      <h2>Registro de ventas</h2>
+      <p>Registra ventas presenciales y actualiza el inventario automáticamente.</p>
+    </div>
+    <div class="bienvenida-icono">🛒</div>
+  </section>
+
+  <section class="estadisticas">
+    <div class="tarjeta">
+      <span class="tarjeta-icono">🧾</span>
+      <p>Ventas registradas</p>
+      <h3>{{ ventas().length }}</h3>
+      <small>Transacciones en el sistema</small>
+    </div>
+    <div class="tarjeta">
+      <span class="tarjeta-icono">💰</span>
+      <p>Importe acumulado</p>
+      <h3>S/ {{ totalVendido() | number: '1.2-2' }}</h3>
+      <small>Total del historial consultado</small>
+    </div>
+    <div class="tarjeta">
+      <span class="tarjeta-icono">📦</span>
+      <p>Unidades en la venta</p>
+      <h3>{{ unidades() }}</h3>
+      <small>Productos del carrito actual</small>
+    </div>
+  </section>
+
+  @if (error()) {
+    <div class="alerta alerta-error" role="alert">{{ error() }}</div>
+  }
+  @if (exito()) {
+    <div class="alerta alerta-exito" role="status">{{ exito() }}</div>
+  }
+
+  <div class="dos-columnas">
+    <section class="panel panel-formulario">
+      <div class="panel-superior">
+        <div>
+          <h2>Nueva venta</h2>
+          <p>Selecciona los productos que llevará el cliente</p>
+        </div>
+      </div>
+      <div class="formulario-contenido">
+        <div class="formulario-grid">
+          <div class="campo campo-ancho">
+            <label for="venta-producto">Producto disponible</label>
+            <select id="venta-producto" [(ngModel)]="productoId" [disabled]="cargando()">
+              <option [ngValue]="null">Seleccionar producto</option>
+              @for (producto of disponibles(); track producto.id) {
+                <option [ngValue]="producto.id">
+                  {{ producto.nombre }} · {{ producto.codigo }} · S/
+                  {{ producto.precio | number: '1.2-2' }} · Stock: {{ producto.stock }}
+                </option>
+              }
+            </select>
+          </div>
+          <div class="campo">
+            <label for="venta-cantidad">Cantidad</label
+            ><input id="venta-cantidad" type="number" min="1" step="1" [(ngModel)]="cantidad" />
+          </div>
+          <div class="campo campo-final">
+            <button
+              class="boton-secundario"
+              type="button"
+              (click)="agregar()"
+              [disabled]="cargando()"
+            >
+              + Agregar
+            </button>
+          </div>
+        </div>
+
+        <h3 class="subseccion-titulo">Detalle de la venta</h3>
+        @if (!carrito().length) {
+          <div class="estado-vacio">Agrega productos para comenzar una venta.</div>
+        } @else {
+          <div class="tabla-contenedor">
+            <table>
+              <thead>
+                <tr>
+                  <th>Producto</th>
+                  <th>Cant.</th>
+                  <th>Subtotal</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (item of carrito(); track item.producto.id) {
+                  <tr>
+                    <td>
+                      <strong>{{ item.producto.nombre }}</strong
+                      ><small class="texto-bloque">{{ item.producto.codigo }}</small>
+                    </td>
+                    <td>{{ item.cantidad }}</td>
+                    <td>S/ {{ item.producto.precio * item.cantidad | number: '1.2-2' }}</td>
+                    <td>
+                      <button
+                        type="button"
+                        class="boton-texto-peligro"
+                        (click)="quitar(item.producto.id)"
+                      >
+                        Quitar
+                      </button>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+        <div class="resumen-total">
+          <span>Total a cobrar</span><strong>S/ {{ total() | number: '1.2-2' }}</strong>
+        </div>
+        <button
+          class="boton-primario boton-ancho"
+          type="button"
+          (click)="registrar()"
+          [disabled]="!carrito().length || guardando()"
+        >
+          {{ guardando() ? 'Registrando...' : 'Confirmar venta' }}
+        </button>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-superior">
+        <div>
+          <h2>Últimas transacciones</h2>
+          <p>Ventas realizadas en PuntoÚtil</p>
+        </div>
+        <button type="button" class="boton-actualizar" (click)="cargarDatos()">↻ Actualizar</button>
+      </div>
+      @if (!ventas().length) {
+        <div class="estado-vacio">Todavía no hay ventas registradas.</div>
+      } @else {
+        <div class="tabla-contenedor">
+          <table>
+            <thead>
+              <tr>
+                <th>N.°</th>
+                <th>Fecha</th>
+                <th>Artículos</th>
+                <th>Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (venta of ventas().slice(0, 15); track venta.id) {
+                <tr>
+                  <td class="codigo">#{{ venta.id }}</td>
+                  <td>{{ venta.fecha | date: 'dd/MM/yyyy HH:mm' }}</td>
+                  <td>{{ venta.detalles?.length ?? 0 }}</td>
+                  <td class="precio">S/ {{ venta.total | number: '1.2-2' }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </section>
+  </div>
+</main>

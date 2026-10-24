@@ -1,0 +1,189 @@
+<main class="principal">
+  <section class="bienvenida">
+    <div>
+      <p class="etiqueta">ADMINISTRACIÓN DE ACCESOS</p>
+      <h2>Usuarios y permisos</h2>
+      <p>Gestiona las cuentas que pueden operar PuntoÚtil según su rol.</p>
+    </div>
+    <div class="bienvenida-icono">👥</div>
+  </section>
+  <section class="estadisticas">
+    <div class="tarjeta">
+      <span class="tarjeta-icono">👤</span>
+      <p>Usuarios registrados</p>
+      <h3>{{ usuarios().length }}</h3>
+      <small>Total de cuentas</small>
+    </div>
+    <div class="tarjeta">
+      <span class="tarjeta-icono">✅</span>
+      <p>Usuarios activos</p>
+      <h3>{{ activos() }}</h3>
+      <small>Con acceso habilitado</small>
+    </div>
+    <div class="tarjeta">
+      <span class="tarjeta-icono">🔐</span>
+      <p>Perfiles disponibles</p>
+      <h3>3</h3>
+      <small>Administrador, vendedor y cliente</small>
+    </div>
+  </section>
+
+  @if (error()) {
+    <div class="alerta alerta-error" role="alert">{{ error() }}</div>
+  }
+  @if (exito()) {
+    <div class="alerta alerta-exito" role="status">{{ exito() }}</div>
+  }
+
+  <section class="panel">
+    <div class="panel-superior">
+      <div>
+        <h2>Gestión de usuarios</h2>
+        <p>Control de cuentas y permisos del sistema</p>
+      </div>
+      <button class="boton-primario" type="button" (click)="nuevo()">+ Nuevo usuario</button>
+    </div>
+    <div class="herramientas">
+      <input
+        type="search"
+        placeholder="Buscar por usuario, nombre o correo"
+        aria-label="Buscar usuarios"
+        (input)="busqueda.set($any($event.target).value)"
+      />
+    </div>
+
+    @if (mostrandoFormulario()) {
+      <div class="editor-usuario">
+        <h3>{{ editando() === null ? 'Crear usuario' : 'Editar usuario' }}</h3>
+        <form #usuarioForm="ngForm" (ngSubmit)="guardar()">
+          <div class="formulario-grid">
+            <div class="campo">
+              <label for="usuario-usuario">Usuario *</label
+              ><input
+                id="usuario-usuario"
+                name="usuario"
+                [(ngModel)]="usuario"
+                required
+                maxlength="60"
+                [disabled]="editando() !== null"
+                placeholder="Nombre de usuario"
+              />
+            </div>
+            <div class="campo">
+              <label for="usuario-nombre">Nombre completo *</label
+              ><input
+                id="usuario-nombre"
+                name="nombre"
+                [(ngModel)]="nombre"
+                required
+                maxlength="120"
+              />
+            </div>
+            <div class="campo">
+              <label for="usuario-email">Correo electrónico *</label
+              ><input
+                id="usuario-email"
+                type="email"
+                name="email"
+                [(ngModel)]="email"
+                email
+                required
+                maxlength="160"
+              />
+            </div>
+            <div class="campo">
+              <label for="usuario-rol">Rol *</label
+              ><select id="usuario-rol" name="rol" [(ngModel)]="rol" required>
+                <option value="ADMINISTRADOR">Administrador</option>
+                <option value="VENDEDOR">Vendedor</option>
+                <option value="CLIENTE">Cliente</option>
+              </select>
+            </div>
+            <div class="campo">
+              <label for="usuario-password">{{
+                editando() === null ? 'Contraseña *' : 'Nueva contraseña (opcional)'
+              }}</label
+              ><input
+                id="usuario-password"
+                type="password"
+                name="contrasena"
+                [(ngModel)]="contrasena"
+                [required]="editando() === null"
+                minlength="8"
+                maxlength="72"
+                autocomplete="new-password"
+              />
+            </div>
+            @if (editando() !== null) {
+              <div class="campo">
+                <label for="usuario-activo">Estado</label
+                ><select id="usuario-activo" name="activo" [(ngModel)]="activo">
+                  <option [ngValue]="true">Activo</option>
+                  <option [ngValue]="false">Inactivo</option>
+                </select>
+              </div>
+            }
+          </div>
+          <div class="acciones-derecha">
+            <button class="boton-neutro" type="button" (click)="cancelar()">Cancelar</button
+            ><button
+              class="boton-primario"
+              type="submit"
+              [disabled]="usuarioForm.invalid || guardando()"
+            >
+              {{ guardando() ? 'Guardando...' : 'Guardar usuario' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    }
+
+    @if (cargando()) {
+      <div class="estado-vacio">Cargando usuarios...</div>
+    } @else if (!usuariosFiltrados().length) {
+      <div class="estado-vacio">No se encontraron usuarios.</div>
+    } @else {
+      <div class="tabla-contenedor">
+        <table>
+          <thead>
+            <tr>
+              <th>Usuario</th>
+              <th>Nombre</th>
+              <th>Correo</th>
+              <th>Rol</th>
+              <th>Estado</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (item of usuariosFiltrados(); track item.id) {
+              <tr>
+                <td class="codigo">{{ item.usuario }}</td>
+                <td>{{ item.nombre }}</td>
+                <td>{{ item.email }}</td>
+                <td>{{ item.rol }}</td>
+                <td>
+                  <span class="etiqueta-estado" [class.cancelado]="!item.activo">{{
+                    item.activo ? 'ACTIVO' : 'INACTIVO'
+                  }}</span>
+                </td>
+                <td>
+                  <div class="acciones-tabla">
+                    <button class="boton-enlace" type="button" (click)="editar(item)">
+                      Editar
+                    </button>
+                    @if (item.activo) {
+                      <button class="boton-texto-peligro" type="button" (click)="desactivar(item)">
+                        Desactivar
+                      </button>
+                    }
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </section>
+</main>

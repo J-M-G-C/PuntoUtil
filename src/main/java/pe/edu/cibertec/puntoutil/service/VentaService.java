@@ -1,6 +1,7 @@
 package pe.edu.cibertec.puntoutil.service;
 
 import pe.edu.cibertec.puntoutil.dto.DetalleVentaRequest;
+import pe.edu.cibertec.puntoutil.dto.MovimientoInventarioRequest;
 import pe.edu.cibertec.puntoutil.dto.VentaRequest;
 import pe.edu.cibertec.puntoutil.entity.DetalleVenta;
 import pe.edu.cibertec.puntoutil.entity.Producto;
@@ -24,6 +25,9 @@ public class VentaService {
     @Autowired
     private ProductoRepository productoRepository;
 
+    @Autowired
+    private InventarioService inventarioService;
+
     @Transactional
     public Venta registrarVenta(VentaRequest request) {
         if (request.getDetalles() == null || request.getDetalles().isEmpty()) {
@@ -35,6 +39,10 @@ public class VentaService {
         BigDecimal totalAcumulado = BigDecimal.ZERO;
 
         for (DetalleVentaRequest item : request.getDetalles()) {
+            if (item.getCantidad() == null || item.getCantidad() <= 0) {
+                throw new IllegalArgumentException("La cantidad debe ser mayor a cero.");
+            }
+
             Producto producto = productoRepository.findById(item.getProductoId())
                     .orElseThrow(() -> new RuntimeException("Producto no encontrado con ID: " + item.getProductoId()));
 
@@ -44,8 +52,11 @@ public class VentaService {
                         + ", solicitado: " + item.getCantidad());
             }
 
-            producto.setStock(producto.getStock() - item.getCantidad());
-            productoRepository.save(producto);
+            // Uso del servicio de inventario existente para descontar stock y registrar movimiento
+            MovimientoInventarioRequest movimiento = new MovimientoInventarioRequest();
+            movimiento.setProductoId(producto.getId());
+            movimiento.setCantidad(item.getCantidad());
+            inventarioService.registrarSalida(movimiento);
 
             DetalleVenta detalle = new DetalleVenta();
             detalle.setProducto(producto);

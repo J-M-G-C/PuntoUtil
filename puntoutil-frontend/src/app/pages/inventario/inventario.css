@@ -40,3 +40,23 @@
   font-size: 12px;
   color: #8592a5;
 }
+
+.boton-descargar {
+  background: #218454;
+  color: white;
+  border: none;
+  border-radius: 9px;
+  padding: 11px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.boton-descargar:hover {
+  background: #17653e;
+}
+
+.boton-descargar:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
